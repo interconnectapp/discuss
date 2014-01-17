@@ -14,6 +14,9 @@ config =
 		fps: 0.5
 		mime: 'image/jpeg'
 		quality: 0.8
+	mediaOptions:
+		# muted: false
+		constraints: captureConfig("camera max:320x240").toConstraints()
 
 signaller = null
 peerConnections = {}
@@ -24,7 +27,7 @@ peerStreamElements = {}
 peerSnapElements = {}
 localStream = null
 localStreamMedia = null
-localStreamVideo = null
+localStreamElement = null
 peerBroadcastStreamStatus = {}
 $body = null
 
@@ -32,10 +35,10 @@ $body = null
 canvas = videoproc(document.body, config.snapOptions)
 
 # capture media and render to the canvas
-localStreamMedia = media(constraints: captureConfig("camera max:320x240").toConstraints())
+localStreamMedia = media(config.mediaOptions)
 localStreamMedia.render(canvas)
 canvas.style.display = "none"
-localStreamVideo = localStreamMedia.render(document.body)
+localStreamElement = $(localStreamMedia.render(document.body)).attr('muted', '')
 
 # add the processing options
 canvas.pipeline.add(grayScaleFilter)
@@ -71,9 +74,10 @@ destroyPeer = (peerId) ->
 	delete peerBroadcastStreamStatus[peerId]
 
 showPeerStream = (peerId) ->
-	peerStreamMedias[peerId] ?= media(peerStreams[peerId])
-	peerStreamElements[peerId] ?= $(peerStreamMedias[peerId].render(document.body)).data('peerId', peerId).addClass('theirs')
-	destroyPeerSnap(peerId)
+	if peerStreams[peerId]? is true and peerStreamElements[peerId]? is false
+		peerStreamMedias[peerId] ?= media(peerStreams[peerId])
+		peerStreamElements[peerId] = $(peerStreamMedias[peerId].render(document.body)).data('peerId', peerId).addClass('theirs')
+		destroyPeerSnap(peerId)
 
 sendMessage = (peerId, data) ->
 	message = JSON.stringify(data)
@@ -92,7 +96,7 @@ signaller
 			console.log('received message', data, 'from', peerId)
 
 			switch data.action
-				when 'request-stream'
+				when 'send-stream'
 					if peerBroadcastStreamStatus[peerId]? is false and localStream
 						peerConnections[peerId].addStream(localStream)
 						peerBroadcastStreamStatus[peerId] = true
@@ -105,12 +109,7 @@ signaller
 						sendMessage(peerId, {action:'cancelled-stream'})
 
 				when 'sent-stream'
-					setTimeout(
-						->
-							console.log('RECEIVED STREAM', peerStreams[peerId], event)
-							showPeerStream(peerId)
-						1000
-					)
+					showPeerStream(peerId)
 
 				when 'cancelled-stream'
 					destroyPeerStream(peerId)
@@ -147,6 +146,6 @@ $body.on("click", "img.theirs, video.theirs", ->
 	if peerStreamElements[peerId]?
 		action = 'cancel-stream'
 	else
-		action = 'request-stream'
+		action = 'send-stream'
 	sendMessage(peerId, {action})
 )
