@@ -57,14 +57,18 @@ class App
 
 	sendStream: (peerId) ->
 		peer = @getPeer(peerId)
-		peer.connection.addStream(@local.stream)
-		peer.streaming = true
+		if peer.streaming is false
+			peer.connection.addStream(@local.stream)
+			peer.streaming = true
+			@sendMessage(peerId, {action:'sent-stream'})
 		@
 
 	cancelStream: (peerId) ->
 		peer = @getPeer(peerId)
-		peer.connection.removeStream(@local.stream)  if @local.stream?
-		peer.streaming = false
+		if peer.streaming is true
+			peer.connection.removeStream(@local.stream)  if @local.stream?
+			peer.streaming = false
+			@sendMessage(peerId, {action:'cancelled-stream'})
 		@
 
 	createConnection: ->
@@ -86,12 +90,10 @@ class App
 							console.log 'SEND STREAM', peerId
 							if @local.stream
 								@sendStream(peerId)
-								@sendMessage(peerId, {action:'sent-stream'})
 
 						when 'cancel-stream'
 							console.log 'CANCEL STREAM', peerId
 							@cancelStream(peerId)
-							@sendMessage(peerId, {action:'cancelled-stream'})
 
 						# NOTE:
 						# This is here as the addstream event only works once
@@ -99,10 +101,12 @@ class App
 						when 'sent-stream'
 							console.log 'SENT STREAM', peerId
 							@showPeerStream(peerId)
+							@sendStream(peerId)
 
 						when 'cancelled-stream'
 							console.log 'CANCELLED STREAM', peerId
 							@destroyPeerStream(peerId)
+							@cancelStream(peerId)
 							#@sendMessage(peerId, {action:'cancel-stream'})
 
 						when 'snap'
