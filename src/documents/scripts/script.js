@@ -5,7 +5,11 @@ var captureConfig = require('rtc-captureconfig');
 // var channelbuffer = require('rtc-channelbuffer');
 
 var config = {
-  signalHost: location.href.replace(/(^.*\/).*$/, '$1')
+  signalHost: location.href.replace(/(^.*\/).*$/, '$1'),
+  connectionOptions: {
+    room: 'demo-snaps',
+    debug: true
+  }
 };
 
 // create a video processing canvas that will capture an update every second
@@ -31,13 +35,15 @@ canvas.addEventListener('postprocess', function(evt) {
   });
 });
 
-quickconnect(config.signalHost, { room: 'demo-snaps' })
+quickconnect(config.signalHost, config.connectionOptions)
   // tell quickconnect we want a datachannel called test
   .createDataChannel('snaps')
 
   // when the test channel is open, let us know
   .on('snaps:open', function(channel, id) {
+    console.log('snaps opened');
     channel.onmessage = function(evt) {
+      console.log('snaps message');
       if (images[id]) {
         images[id].src = evt.data;
       }
@@ -54,6 +60,7 @@ quickconnect(config.signalHost, { room: 'demo-snaps' })
 
   // when a peer leaves, clean up their image
   .on('peer:leave', function(id) {
+    console.log('peer leave');
     if (images[id]) {
       document.body.removeChild(images[id]);
       images[id] = undefined;
