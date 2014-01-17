@@ -60,9 +60,16 @@ destroyPeerSnap = (peerId) ->
 		delete peerSnapElements[peerId]
 
 destroyPeerStream = (peerId) ->
+	if peerStreamMedias[peerId]?
+		#peerStreamMedias[peerId].stop()
+		delete peerStreamMedias[peerId]
+
 	if peerStreamElements[peerId]?
 		peerStreamElements[peerId].remove()
 		delete peerStreamElements[peerId]
+
+window.debug = ->
+	debugger
 
 destroyPeer = (peerId) ->
 	destroyPeerSnap(peerId)
@@ -74,7 +81,10 @@ destroyPeer = (peerId) ->
 	delete peerBroadcastStreamStatus[peerId]
 
 showPeerStream = (peerId) ->
+	console.log 'SHOW STREAM BEFORE', peerId, peerConnections[peerId].getRemoteStreams()
+	#peerStreams[peerId] ?= peerConnections[peerId].getRemoteStreams()[0]
 	if peerStreams[peerId]? is true and peerStreamElements[peerId]? is false
+		console.log 'SHOW STREAM', peerId
 		peerStreamMedias[peerId] ?= media(peerStreams[peerId])
 		peerStreamElements[peerId] = $(peerStreamMedias[peerId].render(document.body)).data('peerId', peerId).addClass('theirs')
 		destroyPeerSnap(peerId)
@@ -93,10 +103,11 @@ signaller
 
 		peerChannel.onmessage = (event) ->
 			data = JSON.parse(event.data or '{}') or {}
-			console.log('received message', data, 'from', peerId)
+			console.log('received message', data, 'from', peerId, 'event', event)  if data.action isnt 'snap'
 
 			switch data.action
 				when 'send-stream'
+					console.log 'SEND STREAM', peerId
 					if peerBroadcastStreamStatus[peerId]? is false and localStream
 						peerConnections[peerId].addStream(localStream)
 						peerBroadcastStreamStatus[peerId] = true
@@ -108,7 +119,11 @@ signaller
 						delete peerBroadcastStreamStatus[peerId]
 						sendMessage(peerId, {action:'cancelled-stream'})
 
+				# NOTE:
+				# This is here as the addstream event only works once
+				# Rather than every time
 				when 'sent-stream'
+					console.log 'SENT STREAM', peerId
 					showPeerStream(peerId)
 
 				when 'cancelled-stream'
@@ -123,7 +138,17 @@ signaller
 	.on("peer:connect", (peerConnection, peerId, data, monitor) ->
 		peerConnections[peerId] = peerConnection
 
+		setInterval(
+			-> console.log 'REMOTE STREAMS:', peerId, peerConnections[peerId].getRemoteStreams()
+			5000
+		)
+
+		# NOTE:
+		# The addstream event doesn't fire for streams that have been added previously
+		# As such, add stream only fires the first time a stream is shared
+		# For subsequent shares, we rely on sent-stream
 		peerConnection.onaddstream = (event) ->
+			console.log 'ADD STREAM', peerId
 			peerStreams[peerId] = event.stream
 			showPeerStream(peerId)
 
@@ -138,6 +163,7 @@ signaller
 
 
 localStreamMedia.once('capture', (stream) ->
+	console.log 'CAPTURED STREAM', stream
 	localStream = stream
 )
 
