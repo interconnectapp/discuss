@@ -11,16 +11,20 @@ config =
 		room: "demo-snaps"
 		debug: false
 	snapOptions:
-		fps: 1 # 0.1
+		fps: 0.5
 		mime: 'image/jpeg'
 		quality: 0.8
 
 signaller = null
 peerConnections = {}
 peerChannels = {}
-snapElements = {}
-streamElements = {}
-localMediaStream = null
+peerStreams = {}
+peerStreamMedias = {}
+peerStreamElements = {}
+peerSnapElements = {}
+localStream = null
+localStreamMedia = null
+localStreamVideo = null
 peerBroadcastStreamStatus = {}
 $body = null
 
@@ -28,11 +32,10 @@ $body = null
 canvas = videoproc(document.body, config.snapOptions)
 
 # capture media and render to the canvas
-localMedia = media(constraints: captureConfig("camera max:320x240").toConstraints())
-localMedia.render(canvas)
+localStreamMedia = media(constraints: captureConfig("camera max:320x240").toConstraints())
+localStreamMedia.render(canvas)
 canvas.style.display = "none"
-localVideo = localMedia.render(document.body)
-$localVideo = $(localVideo).addClass('mine')
+localStreamVideo = localStreamMedia.render(document.body)
 
 # add the processing options
 canvas.pipeline.add(grayScaleFilter)
@@ -43,27 +46,39 @@ canvas.addEventListener "postprocess", (event) ->
 	dataURI = canvas.toDataURL(config.snapOptions.mime, config.snapOptions.quality)
 	for own peerId,peerChannel of peerChannels
 		if peerBroadcastStreamStatus[peerId] isnt true
-			peerChannel.send(JSON.stringify {action:'snap', dataURI})
+			sendMessage(peerId, {action:'snap', dataURI})
 
 signaller = quickconnect(config.signalHost, config.connectionOptions)
 $body = $(document.body)
 
 destroyPeerSnap = (peerId) ->
-	if snapElements[peerId]?
-		snapElements[peerId].remove()
-		delete snapElements[peerId]
+	if peerSnapElements[peerId]?
+		peerSnapElements[peerId].remove()
+		delete peerSnapElements[peerId]
 
 destroyPeerStream = (peerId) ->
-	if streamElements[peerId]?
-		streamElements[peerId].remove()
-		delete streamElements[peerId]
+	if peerStreamElements[peerId]?
+		peerStreamElements[peerId].remove()
+		delete peerStreamElements[peerId]
 
 destroyPeer = (peerId) ->
 	destroyPeerSnap(peerId)
 	destroyPeerStream(peerId)
 
 	delete peerChannels[peerId]
+	delete peerStreams[peerId]
+	delete peerStreamMedias[peerId]
 	delete peerBroadcastStreamStatus[peerId]
+
+showPeerStream = (peerId) ->
+	peerStreamMedias[peerId] ?= media(peerStreams[peerId])
+	peerStreamElements[peerId] ?= $(peerStreamMedias[peerId].render(document.body)).data('peerId', peerId).addClass('theirs')
+	destroyPeerSnap(peerId)
+
+sendMessage = (peerId, data) ->
+	message = JSON.stringify(data)
+	console.log('send message', data, 'to', peerId)
+	peerChannels[peerId].send(message)
 
 
 signaller
@@ -74,36 +89,45 @@ signaller
 
 		peerChannel.onmessage = (event) ->
 			data = JSON.parse(event.data or '{}') or {}
-			console.log 'received message', data, event
+			console.log('received message', data, 'from', peerId)
 
 			switch data.action
 				when 'request-stream'
-					if peerBroadcastStreamStatus[peerId]? is false and localMediaStream
-						peerConnections[peerId].addStream(localMediaStream)
+					debugger
+					if peerBroadcastStreamStatus[peerId]? is false and localStream
+						peerConnections[peerId].addStream(localStream)
 						peerBroadcastStreamStatus[peerId] = true
+						sendMessage(peerId, {action:'sent-stream'})
 
 				when 'cancel-stream'
 					if peerBroadcastStreamStatus[peerId] is true
-						peerConnections[peerId].removeStream(localMediaStream)  if localMediaStream?
+						peerConnections[peerId].removeStream(localStream)  if localStream?
 						delete peerBroadcastStreamStatus[peerId]
-						peerChannel.send(JSON.stringify {action:'cancelled-stream'})
+						sendMessage(peerId, {action:'cancelled-stream'})
+
+				when 'sent-stream'
+					setTimeout(
+						->
+							console.log('RECEIVED STREAM', peerStreams[peerId], event)
+							showPeerStream(peerId)
+						1000
+					)
 
 				when 'cancelled-stream'
 					destroyPeerStream(peerId)
 
 				when 'snap'
-					snapElements[peerId] ?= $("<img>").data('peerId', peerId).addClass('theirs').appendTo($body)
-					snapElements[peerId].attr("src", data.dataURI)	 if snapElements[peerId]?
+					if peerSnapElements[peerId]? is false
+						peerSnapElements[peerId] = $("<img>").data('peerId', peerId).addClass('theirs').appendTo($body)
+					peerSnapElements[peerId].attr("src", data.dataURI)
 	)
 
 	.on("peer:connect", (peerConnection, peerId, data, monitor) ->
 		peerConnections[peerId] = peerConnection
 
 		peerConnection.onaddstream = (event) ->
-			streamMedia = media(event.stream)
-			streamElement = $(streamMedia.render(document.body)).data('peerId', peerId).addClass('theirs')
-			streamElements[peerId] = streamElement
-			destroyPeerSnap(peerId)
+			peerStreams[peerId] = event.stream
+			showPeerStream(peerId)
 
 			#event.stream.onended = -> destroyPeerStream(peerId)
 
@@ -115,16 +139,15 @@ signaller
 	)
 
 
-localMedia.once('capture', (stream) ->
-	localMediaStream = stream
+localStreamMedia.once('capture', (stream) ->
+	localStream = stream
 )
 
 $body.on("click", "img.theirs, video.theirs", ->
 	peerId = $(@).data('peerId')
-	peerChannel = peerChannels[peerId]
-	if streamElements[peerId]?
+	if peerStreamElements[peerId]?
 		action = 'cancel-stream'
 	else
 		action = 'request-stream'
-	peerChannel.send(JSON.stringify {action})
+	sendMessage(peerId, {action})
 )
