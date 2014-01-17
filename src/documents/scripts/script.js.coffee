@@ -204,10 +204,10 @@ class App
 
 	sendMessage: (peerId, data) ->
 		peer = @getPeer(peerId)
+		console.log('send message', data, 'to', peerId)  if data.action isnt 'snap'
 
-		if peer
+		if peer and peer.channel
 			message = JSON.stringify(data)
-			console.log('send message', data, 'to', peerId)  if data.action isnt 'snap'
 			peer.channel.send(message)
 
 		@
