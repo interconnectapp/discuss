@@ -93,7 +93,6 @@ signaller
 
 			switch data.action
 				when 'request-stream'
-					debugger
 					if peerBroadcastStreamStatus[peerId]? is false and localStream
 						peerConnections[peerId].addStream(localStream)
 						peerBroadcastStreamStatus[peerId] = true
