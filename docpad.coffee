@@ -42,9 +42,7 @@ docpadConfig = {
 
 			# The website's scripts
 			scripts: [
-				'/vendor/log.js'
-				'/vendor/modernizr.js'
-				'/scripts/script.js'
+				'/scripts/script-bundled.js'
 			]
 
 
@@ -74,6 +72,20 @@ docpadConfig = {
 
 
 	# =================================
+	# DocPad Plugins
+
+	plugins:
+		browserifybundles:
+			bundles: [
+				{
+					arguments: ['-r', 'rtc-videoproc/filters/grayscale']
+					entry:     'scripts/script.js'
+					out:       'scripts/script-bundled.js'
+				}
+			]
+
+
+	# =================================
 	# DocPad Events
 
 	# Here we can define handlers for events that DocPad fires
@@ -84,7 +96,7 @@ docpadConfig = {
 		# Used to add our own custom routes to the server before the docpad routes are added
 		serverExtend: (opts) ->
 			# Extract the server from the options
-			{server} = opts
+			{serverHttp, serverExpress} = opts
 			docpad = @docpad
 
 			# As we are now running in an event,
@@ -95,11 +107,18 @@ docpadConfig = {
 			newUrl = latestConfig.templateData.site.url
 
 			# Redirect any requests accessing one of our sites oldUrls to the new site url
-			server.use (req,res,next) ->
+			serverExpress.use (req,res,next) ->
 				if req.headers.host in oldUrls
 					res.redirect(newUrl+req.url, 301)
 				else
 					next()
+
+			# Signaller
+			switchboard = require('rtc-switchboard')(serverHttp)
+			serverExpress.get('/rtc.io/primus.js', switchboard.library())
+
+			# Done
+			return true
 }
 
 # Export our DocPad Configuration
