@@ -5,8 +5,222 @@ captureConfig = require("rtc-captureconfig")
 grayScaleFilter = require("rtc-videoproc/filters/grayscale")
 $ = jQuery = require("jquery-browserify")
 
-config =
-	signalHost: location.href.replace(/(^.*\/).*$/, "$1")
+class App
+	config: null
+	signaller: null
+	local: null
+	peers: null
+
+	constructor: (opts) ->
+		@config = opts
+		@local =
+			stream: false
+			media: false
+			video: false
+			canvas: false
+		@peers = {}
+		@
+
+	# Create high bandwidth local stream
+	createLocalStream: ->
+		@local.media = media(@config.mediaOptions)
+
+		@local.media.once('capture', (stream) =>
+			console.log 'CAPTURED STREAM', stream
+			@local.stream = stream
+		)
+
+		@local.video = $(@local.media.render(@config.el))
+			.attr('muted', '')
+			#.attr('controls', '')
+			.addClass('mine')
+
+		@
+
+	createLocalSnaps: ->
+		@local.canvas = videoproc(@config.el, @config.snapOptions)
+		@local.canvas.style.display = "none"
+		@local.media.render(@local.canvas)
+
+		# add the processing options
+		@local.canvas.pipeline.add(grayScaleFilter)
+
+		# once the canvas has been updated with the filters applied
+		# capture the image data from the canvas and send via the data channel
+		@local.canvas.addEventListener "postprocess", (event) =>
+			dataURI = @local.canvas.toDataURL(@config.snapOptions.mime, @config.snapOptions.quality)
+			for own peerId,peer of @peers
+				if peer.streaming isnt true
+					@sendMessage(peerId, {action:'snap', dataURI})
+
+		@
+
+	createConnection: ->
+		@signaller = quickconnect(@config.signalHost, @config.connectionOptions)
+
+		@signaller
+			.createDataChannel("messages")
+
+			.on("messages:open", (peerChannel, peerId) =>
+				peer = @getPeer(peerId)
+				peer.channel = peerChannel
+
+				peer.channel.onmessage = (event) =>
+					data = JSON.parse(event.data or '{}') or {}
+					console.log('received message', data, 'from', peerId, 'event', event)  if data.action isnt 'snap'
+
+					switch data.action
+						when 'send-stream'
+							console.log 'SEND STREAM', peerId
+							if @local.stream
+								peer.connection.addStream(@local.stream)
+								peer.streaming = true
+								@sendMessage(peerId, {action:'sent-stream'})
+
+						when 'cancel-stream'
+							peer.connection.removeStream(@local.stream)  if @local.stream?
+							peer.streaming = false
+							@sendMessage(peerId, {action:'cancelled-stream'})
+
+						# NOTE:
+						# This is here as the addstream event only works once
+						# Rather than every time
+						when 'sent-stream'
+							console.log 'SENT STREAM', peerId
+							@showPeerStream(peerId)
+
+						when 'cancelled-stream'
+							console.log 'CANCELLED STREAM', peerId
+							@destroyPeerStream(peerId)
+							#@sendMessage(peerId, {action:'cancel-stream'})
+
+						when 'snap'
+							if peer.snap is false
+								peer.snap = $("<img>")
+									.data('peerId', peerId)
+									.addClass('theirs')
+									.appendTo(@config.$el)
+
+							peer.snap.attr("src", data.dataURI)
+			)
+
+			.on("peer:connect", (peerConnection, peerId, data, monitor) =>
+				peer = @getPeer(peerId)
+				peer.connection = peerConnection
+
+				#setInterval(
+				#	-> console.log 'REMOTE STREAMS:', peerId, peerConnection.getRemoteStreams()
+				#	5000
+				#)
+
+				# NOTE:
+				# The addstream event doesn't fire for streams that have been added previously
+				# As such, add stream only fires the first time a stream is shared
+				# For subsequent shares, we rely on sent-stream
+				peerConnection.onaddstream = (event) =>
+					console.log 'ADD STREAM', peerId
+					peer.stream = event.stream
+					@showPeerStream(peerId)
+
+					#event.stream.onended = -> destroyPeerStream(peerId)
+				#peerConnection.onremovestream = (event) -> destroyPeerStream(peerId)
+		  	)
+
+			.on("peer:leave", (peerId) =>
+				@destroyPeer(peerId)
+			)
+
+		@
+
+	getPeer: (peerId) ->
+		return @peers[peerId] or @createPeer(peerId)
+
+	createPeer: (peerId) ->
+		peer = @peers[peerId] ?= {}
+		peer.streaming = false
+		peer.snap = false
+		peer.stream = false
+		peer.media = false
+		peer.video = false
+		return peer
+
+	destroyPeer: (peerId) ->
+		@destroyPeerSnap(peerId)
+		@destroyPeerStream(peerId)
+		delete @peers[peerId]
+		@
+
+	destroyPeerSnap: (peerId) ->
+		peer = @getPeer(peerId)
+
+		if peer?.snap
+			peer.snap.remove()
+			peer.snap = false
+
+		@
+
+	destroyPeerStream: (peerId) ->
+		peer = @getPeer(peerId)
+
+		if peer?.media
+			peer.media = false
+
+		if peer?.video
+			peer.video.remove()
+			peer.video = false
+
+		@
+
+	showPeerStream: (peerId) ->
+		peer = @getPeer(peerId)
+
+		console.log 'SHOW STREAM BEFORE', peerId, peer.connection?.getRemoteStreams()
+
+		if peer and peer.stream and peer.video is false
+			console.log 'SHOW STREAM', peerId
+			peer.media = media(peer.stream)  if peer.media is false
+			peer.video = $(peer.media.render(@config.el))
+				.data('peerId', peerId)
+				#.attr('controls', '')
+				.addClass('theirs')
+			@destroyPeerSnap(peerId)
+
+		@
+
+	sendMessage: (peerId, data) ->
+		peer = @getPeer(peerId)
+
+		if peer
+			message = JSON.stringify(data)
+			console.log('send message', data, 'to', peerId)  if data.action isnt 'snap'
+			peer.channel.send(message)
+
+		@
+
+
+	render: ->
+		@config.$el.on("click", "img.theirs, video.theirs", (event) =>
+			peerId = $(event.target).data('peerId')
+			peer = @getPeer(peerId)
+			if peer.video
+				action = 'cancel-stream'
+			else
+				action = 'send-stream'
+			@sendMessage(peerId, {action})
+		)
+		@
+
+	setup: ->
+		@createLocalStream()
+		@createLocalSnaps()
+		@createConnection()
+		@render()
+		@
+
+app = new App(
+	el: document.body
+	$el: $(document.body)
+	signalHost: location.href.replace(/(^.*\/).*$/, "$1")  # 'http://rtc.io/switchboard/'
 	connectionOptions:
 		room: "demo-snaps"
 		debug: false
@@ -15,163 +229,9 @@ config =
 		mime: 'image/jpeg'
 		quality: 0.8
 	mediaOptions:
-		# muted: false
+		muted: false
 		constraints: captureConfig("camera max:320x240").toConstraints()
-
-signaller = null
-peerConnections = {}
-peerChannels = {}
-peerStreams = {}
-peerStreamMedias = {}
-peerStreamElements = {}
-peerSnapElements = {}
-localStream = null
-localStreamMedia = null
-localStreamElement = null
-peerBroadcastStreamStatus = {}
-$body = null
-
-# create a video processing canvas that will capture an update every second
-canvas = videoproc(document.body, config.snapOptions)
-
-# capture media and render to the canvas
-localStreamMedia = media(config.mediaOptions)
-localStreamMedia.render(canvas)
-canvas.style.display = "none"
-localStreamElement = $(localStreamMedia.render(document.body)).attr('muted', '')
-
-# add the processing options
-canvas.pipeline.add(grayScaleFilter)
-
-# once the canvas has been updated with the filters applied
-# capture the image data from the canvas and send via the data channel
-canvas.addEventListener "postprocess", (event) ->
-	dataURI = canvas.toDataURL(config.snapOptions.mime, config.snapOptions.quality)
-	for own peerId,peerChannel of peerChannels
-		if peerBroadcastStreamStatus[peerId] isnt true
-			sendMessage(peerId, {action:'snap', dataURI})
-
-signaller = quickconnect(config.signalHost, config.connectionOptions)
-$body = $(document.body)
-
-destroyPeerSnap = (peerId) ->
-	if peerSnapElements[peerId]?
-		peerSnapElements[peerId].remove()
-		delete peerSnapElements[peerId]
-
-destroyPeerStream = (peerId) ->
-	if peerStreamMedias[peerId]?
-		#peerStreamMedias[peerId].stop()
-		delete peerStreamMedias[peerId]
-
-	if peerStreamElements[peerId]?
-		peerStreamElements[peerId].remove()
-		delete peerStreamElements[peerId]
-
-window.debug = ->
-	debugger
-
-destroyPeer = (peerId) ->
-	destroyPeerSnap(peerId)
-	destroyPeerStream(peerId)
-
-	delete peerChannels[peerId]
-	delete peerStreams[peerId]
-	delete peerStreamMedias[peerId]
-	delete peerBroadcastStreamStatus[peerId]
-
-showPeerStream = (peerId) ->
-	console.log 'SHOW STREAM BEFORE', peerId, peerConnections[peerId].getRemoteStreams()
-	#peerStreams[peerId] ?= peerConnections[peerId].getRemoteStreams()[0]
-	if peerStreams[peerId]? is true and peerStreamElements[peerId]? is false
-		console.log 'SHOW STREAM', peerId
-		peerStreamMedias[peerId] ?= media(peerStreams[peerId])
-		peerStreamElements[peerId] = $(peerStreamMedias[peerId].render(document.body)).data('peerId', peerId).addClass('theirs')
-		destroyPeerSnap(peerId)
-
-sendMessage = (peerId, data) ->
-	message = JSON.stringify(data)
-	console.log('send message', data, 'to', peerId)
-	peerChannels[peerId].send(message)
-
-
-signaller
-	.createDataChannel("messages")
-
-	.on("messages:open", (peerChannel, peerId) ->
-		peerChannels[peerId] = peerChannel
-
-		peerChannel.onmessage = (event) ->
-			data = JSON.parse(event.data or '{}') or {}
-			console.log('received message', data, 'from', peerId, 'event', event)  if data.action isnt 'snap'
-
-			switch data.action
-				when 'send-stream'
-					console.log 'SEND STREAM', peerId
-					if peerBroadcastStreamStatus[peerId]? is false and localStream
-						peerConnections[peerId].addStream(localStream)
-						peerBroadcastStreamStatus[peerId] = true
-						sendMessage(peerId, {action:'sent-stream'})
-
-				when 'cancel-stream'
-					if peerBroadcastStreamStatus[peerId] is true
-						peerConnections[peerId].removeStream(localStream)  if localStream?
-						delete peerBroadcastStreamStatus[peerId]
-						sendMessage(peerId, {action:'cancelled-stream'})
-
-				# NOTE:
-				# This is here as the addstream event only works once
-				# Rather than every time
-				when 'sent-stream'
-					console.log 'SENT STREAM', peerId
-					showPeerStream(peerId)
-
-				when 'cancelled-stream'
-					destroyPeerStream(peerId)
-
-				when 'snap'
-					if peerSnapElements[peerId]? is false
-						peerSnapElements[peerId] = $("<img>").data('peerId', peerId).addClass('theirs').appendTo($body)
-					peerSnapElements[peerId].attr("src", data.dataURI)
-	)
-
-	.on("peer:connect", (peerConnection, peerId, data, monitor) ->
-		peerConnections[peerId] = peerConnection
-
-		setInterval(
-			-> console.log 'REMOTE STREAMS:', peerId, peerConnections[peerId].getRemoteStreams()
-			5000
-		)
-
-		# NOTE:
-		# The addstream event doesn't fire for streams that have been added previously
-		# As such, add stream only fires the first time a stream is shared
-		# For subsequent shares, we rely on sent-stream
-		peerConnection.onaddstream = (event) ->
-			console.log 'ADD STREAM', peerId
-			peerStreams[peerId] = event.stream
-			showPeerStream(peerId)
-
-			#event.stream.onended = -> destroyPeerStream(peerId)
-
-		#peerConnection.onremovestream = (event) -> destroyPeerStream(peerId)
-  	)
-
-	.on("peer:leave", (peerId) ->
-		destroyPeer(peerId)
-	)
-
-
-localStreamMedia.once('capture', (stream) ->
-	console.log 'CAPTURED STREAM', stream
-	localStream = stream
 )
 
-$body.on("click", "img.theirs, video.theirs", ->
-	peerId = $(@).data('peerId')
-	if peerStreamElements[peerId]?
-		action = 'cancel-stream'
-	else
-		action = 'send-stream'
-	sendMessage(peerId, {action})
-)
+app.setup()
+
