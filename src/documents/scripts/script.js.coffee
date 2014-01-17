@@ -5,6 +5,8 @@ captureConfig = require("rtc-captureconfig")
 grayScaleFilter = require("rtc-videoproc/filters/grayscale")
 $ = jQuery = require("jquery-browserify")
 
+
+
 class App
 	config: null
 	signaller: null
@@ -13,11 +15,13 @@ class App
 
 	constructor: (opts) ->
 		@config = opts
-		@local =
-			stream: false
-			media: false
-			video: false
-			canvas: false
+		@local = {}
+		@local.$el = @config.$el.find('.me').addClass('person')
+		@local.el = @local.$el.get(0)
+		@local.stream = false
+		@local.media = false
+		@local.video = false
+		@local.canvas = false
 		@peers = {}
 		@
 
@@ -30,7 +34,7 @@ class App
 			@local.stream = stream
 		)
 
-		@local.video = $(@local.media.render(@config.el))
+		@local.video = $(@local.media.render(@local.el))
 			.attr('muted', '')
 			#.attr('controls', '')
 			.addClass('mine')
@@ -38,7 +42,7 @@ class App
 		@
 
 	createLocalSnaps: ->
-		@local.canvas = videoproc(@config.el, @config.snapOptions)
+		@local.canvas = videoproc(@local.el, @config.snapOptions)
 		@local.canvas.style.display = "none"
 		@local.media.render(@local.canvas)
 
@@ -114,7 +118,8 @@ class App
 								peer.snap = $("<img>")
 									.data('peerId', peerId)
 									.addClass('theirs')
-									.appendTo(@config.$el)
+									.attr('src', 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==')
+									.appendTo(peer.el)
 
 							peer.snap.attr("src", data.dataURI)
 			)
@@ -152,6 +157,8 @@ class App
 
 	createPeer: (peerId) ->
 		peer = @peers[peerId] ?= {}
+		peer.$el = $('<div>').addClass('peer person').appendTo(@config.$el.find('.peers'))
+		peer.el = peer.$el.get(0)
 		peer.streaming = false
 		peer.snap = false
 		peer.stream = false
@@ -194,7 +201,7 @@ class App
 		if peer and peer.stream and peer.video is false
 			console.log 'SHOW STREAM', peerId
 			peer.media = media(peer.stream)  if peer.media is false
-			peer.video = $(peer.media.render(@config.el))
+			peer.video = $(peer.media.render(peer.el))
 				.data('peerId', peerId)
 				#.attr('controls', '')
 				.addClass('theirs')
@@ -232,9 +239,10 @@ class App
 		@render()
 		@
 
+$app = $('.app')
 app = new App(
-	el: document.body
-	$el: $(document.body)
+	el: $app.get(0)
+	$el: $app
 	signalHost: location.href.replace(/(^.*\/).*$/, "$1")  # 'http://rtc.io/switchboard/'
 	connectionOptions:
 		room: "demo-snaps"
