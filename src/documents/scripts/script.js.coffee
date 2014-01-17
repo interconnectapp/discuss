@@ -55,6 +55,18 @@ class App
 
 		@
 
+	sendStream: (peerId) ->
+		peer = @getPeer(peerId)
+		peer.connection.addStream(@local.stream)
+		peer.streaming = true
+		@
+
+	cancelStream: (peerId) ->
+		peer = @getPeer(peerId)
+		peer.connection.removeStream(@local.stream)  if @local.stream?
+		peer.streaming = false
+		@
+
 	createConnection: ->
 		@signaller = quickconnect(@config.signalHost, @config.connectionOptions)
 
@@ -73,13 +85,12 @@ class App
 						when 'send-stream'
 							console.log 'SEND STREAM', peerId
 							if @local.stream
-								peer.connection.addStream(@local.stream)
-								peer.streaming = true
+								@sendStream(peerId)
 								@sendMessage(peerId, {action:'sent-stream'})
 
 						when 'cancel-stream'
-							peer.connection.removeStream(@local.stream)  if @local.stream?
-							peer.streaming = false
+							console.log 'CANCEL STREAM', peerId
+							@cancelStream(peerId)
 							@sendMessage(peerId, {action:'cancelled-stream'})
 
 						# NOTE:
