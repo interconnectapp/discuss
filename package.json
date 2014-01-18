@@ -49,7 +49,6 @@
     "rtc-signaller": "~0.15.0",
     "rtc-switchboard": "~0.5.0",
     "jquery-browserify": "~1.8.1",
-    "docpad-plugin-ghpages": "~2.4.2",
     "backbone": "~1.1.0",
     "miniview": "~1.2.0",
     "pointers": "~1.1.3",
