@@ -2,6 +2,12 @@
 # It is simply a CoffeeScript Object which is parsed by CSON
 docpadConfig = {
 
+	environments:
+		development:
+			templateData:
+				site:
+					url: "/"
+
 	# =================================
 	# Template Data
 	# These are variables that will be accessible via our templates
@@ -12,12 +18,12 @@ docpadConfig = {
 		# Specify some site properties
 		site:
 			# The production url of our website
-			url: "http://website.com"
+			url: 'http://bevry.github.io/interconnect/'
 
 			# Here are some old site urls that you would like to redirect from
 			oldUrls: [
-				'www.website.com',
-				'website.herokuapp.com'
+				'www.interconnect.com',
+				'interconnect.herokuapp.com'
 			]
 
 			# The default title of our website
@@ -35,14 +41,14 @@ docpadConfig = {
 
 			# The website's styles
 			styles: [
-				'/vendor/normalize.css'
-				'/vendor/h5bp.css'
-				'/styles/style.css'
+				'#{SITE_URL}vendor/normalize.css'
+				'#{SITE_URL}vendor/h5bp.css'
+				'#{SITE_URL}styles/style.css'
 			]
 
 			# The website's scripts
 			scripts: [
-				'/scripts/script-bundled.js'
+				'#{SITE_URL}scripts/script-bundled.js'
 			]
 
 
@@ -91,6 +97,10 @@ docpadConfig = {
 	# Here we can define handlers for events that DocPad fires
 	# You can find a full listing of events on the DocPad Wiki
 	events:
+
+		renderDocument: (opts) ->
+			opts.content = opts.content.replace(/#{SITE_URL}/g, opts.templateData.site.url)
+			return true
 
 		# Server Extend
 		# Used to add our own custom routes to the server before the docpad routes are added
