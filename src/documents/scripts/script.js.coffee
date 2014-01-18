@@ -243,7 +243,7 @@ $app = $('.app')
 app = new App(
 	el: $app.get(0)
 	$el: $app
-	signalHost: location.href.replace(/(^.*\/).*$/, "$1")  # 'http://rtc.io/switchboard/'
+	signalHost: if location.href.indexOf('github.io') then 'http://rtc.io/switchboard/' else location.href.replace(/(^.*\/).*$/, "$1")
 	connectionOptions:
 		room: "demo-snaps"
 		debug: false
