@@ -251,6 +251,7 @@ app = new App(
 		fps: 0.5
 		mime: 'image/jpeg'
 		quality: 0.8
+		greedy: true  # keep generating snaps even when the user's tab is in the background
 	mediaOptions:
 		muted: false
 		constraints: captureConfig("camera max:320x240").toConstraints()
