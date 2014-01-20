@@ -1,0 +1,25 @@
+{
+  "name": "interconnect",
+  "version": "0.1.0",
+  "homepage": "https://github.com/bevry/interconnect",
+  "authors": [
+    "2013+ Bevry Pty Ltd <us@bevry.me> (http://bevry.me)"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "out/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer-elements": "Polymer/polymer-elements#~0.1.3",
+    "polymer-ui-elements": "Polymer/polymer-ui-elements#~0.1.3",
+    "platform": "Polymer/platform#~0.1.3",
+    "polymer": "Polymer/polymer#~0.1.3"
+  },
+  "main": "node_modules/docpad/bin/docpad-server"
+}

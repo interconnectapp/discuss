@@ -48,6 +48,7 @@ docpadConfig = {
 
 			# The website's scripts
 			scripts: [
+				'#{SITE_URL}bower_components/platform/platform.js'
 				'#{SITE_URL}scripts/script-bundled.js'
 			]
 

@@ -1,9 +1,9 @@
 {
-  "name": "html5-boilerplate.docpad",
+  "name": "interconnect",
   "version": "0.1.0",
   "private": true,
-  "description": "HTML5 Boilerplate skeleton for DocPad. Bare essentials for building a modern website with best practices.",
-  "homepage": "https://github.com/docpad/html5-boilerplate.docpad",
+  "description": "High-bandwidth virtual office for open teams. Public rooms are free. Private rooms cost. FOSS.",
+  "homepage": "https://github.com/bevry/interconnect",
   "keywords": [
     "docpad-skeleton",
     "docpad",
@@ -12,19 +12,20 @@
     "html5 boilerplate",
     "h5bp"
   ],
-  "author": "Bevry Pty Ltd <us@bevry.me> (http://bevry.me)",
+  "author": "2013+ Bevry Pty Ltd <us@bevry.me> (http://bevry.me)",
   "maintainers": [
     "Benjamin Lupton <b@lupton.cc> (http://balupton.com)"
   ],
   "contributors": [
-    "Benjamin Lupton <b@lupton.cc> (http://balupton.com)"
+    "balupton (https://github.com/balupton)",
+    "crito (https://github.com/crito)"
   ],
   "bugs": {
-    "url": "https://github.com/docpad/html5-boilerplate.docpad/issues"
+    "url": "https://github.com/bevry/interconnect/issues"
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/docpad/html5-boilerplate.docpad.git"
+    "url": "http://github.com/bevry/interconnect.git"
   },
   "engines": {
     "node": "0.10",
@@ -48,7 +49,12 @@
     "rtc-videoproc": "~0.8.1",
     "rtc-signaller": "~0.15.0",
     "rtc-switchboard": "~0.5.0",
-    "jquery-browserify": "~1.8.1"
+    "jquery-browserify": "~1.8.1",
+    "docpad-plugin-raw": "~2.2.3",
+    "projectz": "~0.3.9"
   },
-  "main": "node_modules/docpad/bin/docpad-server"
+  "main": "node_modules/docpad/bin/docpad-server",
+  "license": {
+    "type": "MIT"
+  }
 }
