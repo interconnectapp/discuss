@@ -84,7 +84,7 @@ docpadConfig = {
 		browserifybundles:
 			bundles: [
 				{
-					arguments: ['-r', 'rtc-videoproc/filters/grayscale', '-r', 'jquery/dist/jquery']
+					arguments: ['-r', 'rtc-videoproc/filters/grayscale']
 					entry:     'scripts/script.js'
 					out:       'scripts/script-bundled.js'
 				}
