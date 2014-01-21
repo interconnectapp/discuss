@@ -38,7 +38,6 @@
     "docpad-plugin-marked": "~2.2.0",
     "docpad-plugin-partials": "~2.8.1",
     "docpad-plugin-coffeekup": "~2.2.0",
-    "docpad-plugin-growl": "~2.0.0",
     "docpad-plugin-browserifybundles": "~2.0.0",
     "docpad-plugin-styl": "~2.0.0",
     "docpad-plugin-ghpages": "~2.4.2",

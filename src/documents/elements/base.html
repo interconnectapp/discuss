@@ -1,0 +1,258 @@
+---
+standalone: true
+---
+
+<link rel="import" href="#{SITE_URL}bower_components/polymer/polymer.html" />
+
+<!--
+The RTC Media
+This is what captures the media and exports it as a stream and streamURI
+-->
+<polymer-element name="rtc-media" attributes="stream muted capture streamURI">
+	<script src="//wzrd.in/bundle/rtc-media@latest"></script>
+	<script src="//wzrd.in/bundle/rtc-captureconfig@latest"></script>
+	<template></template>
+	<script>
+		Polymer('rtc-media', {
+			muted: true,
+			capture: 'camera max:320x240',
+			ready: function(){
+				var me = this;
+				var constraints = require('rtc-captureconfig')(me.capture).toConstraints();
+				var media = require("rtc-media")({
+					muted: me.muted,
+					constraints: constraints
+				});
+				media.once('capture', function(stream){
+					me.stream = stream;
+					me.streamURI = media._createObjectURL(stream);
+				});
+			}
+		});
+	</script>
+</polymer-element>
+
+<!--
+The RTC Video
+This displays our streamURI as a playing video
+-->
+<polymer-element name="rtc-video" attributes="streamURI vid">
+	<template>
+		<video id="vid" mozSrcObject="{{streamURI}}" src="{{streamURI}}" preserveaspectratio></video>
+	</template>
+	<script>
+		Polymer('rtc-video', {
+			streamURIChanged: function(oldValue, newValue) {
+				var me = this;
+				if ( newValue ) {
+					setTimeout(function(){
+						me.$.vid.play();
+						me.vid = me.$.vid;
+					},0);
+				}
+			}
+		});
+	</script>
+</polymer-element>
+
+<!--
+This RTC VideoProc
+This takes a streamURI and generates an imageURI with the filters applied
+-->
+<polymer-element name="rtc-videoproc" attributes="streamURI filter fps mime quality greedy imageURI">
+	<script src="//wzrd.in/bundle/rtc-videoproc@latest"></script>
+	<template>
+		<script src="//wzrd.in/bundle/rtc-filter-{{filter}}@latest" if="{{filter}}"></script>
+	</template>
+	<script>
+		Polymer('rtc-videoproc', {
+			fps: 0.5,
+			mime: 'image/jpeg',
+			quality: 0.8,
+			greedy: true,
+			filter: null,
+			vidChanged: function(oldValue, newValue) {
+				var me = this;
+				if ( newValue ) {
+					var canvas = require('rtc-videoproc')(newValue, {
+						fps: me.fps,
+						greedy: me.greedy
+					});
+
+					document.appendChild(canvas);
+
+					if ( me.filter ) {
+						try {
+							var filter = require('rtc-filter-'+me.filter);
+							canvas.pipeline.add(filter);
+						} catch (err) {
+							console.log(err);
+						}
+					}
+
+					canvas.addEventListener('postprocess', function(event){
+						me.imageURI = canvas.toDataURL(me.mime, me.quality);
+					});
+				}
+			}
+		});
+	</script>
+</polymer-element>
+
+<!--
+===============================================================================
+-->
+
+<!--
+# The RTC Person
+This is a view and model representing each person within the chat room.
+Each person has a name, a video stream, and a low-bandwidth snapshot stream.
+When the video stream is enabled, the low-bandwidth snapshot stream should
+  be disabled and vice versa.
+-->
+<polymer-element name="rtc-person" attributes="talking streaming name muted streamURI snapshotURI">
+	<template>
+		<div class="person">
+			<label id="name">{{name}}</label>
+			<video id="video" class="hidden" src="{{streamURI}}" mozSrcObject="{{streamURI}}" muted="{{muted}}"></video>
+			<img id="image" class="hidden" src="{{snapshotURI}}" />
+		</div>
+	</template>
+	<style>
+		.perosn, video, img {
+			display: inline-block;
+			width: 320px;
+			height: 240px;
+		}
+		.person {
+			box-sizing: border-box;
+			display: inline-block;
+			position: relative;
+			border: 1px solid black;
+			background: #EEE;
+		}
+		label {
+			position: absolute;
+			width: 100%;
+			background: black;
+			background: rgba(0,0,0,0.8);
+			color: white;
+			bottom: 0;
+			left: 0;
+		}
+		.hidden {
+			display: none;
+		}
+	</style>
+	<script>
+		Polymer('rtc-person', {
+			streaming: false,
+			muted: false,
+			streamURI: null,
+			snapshotURI: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+			ready: function(){
+				this.refresh = this.refresh.bind(this);
+				this.refresh();
+			},
+			refresh: function(){
+				var me = this;
+				var vid = this.$.video;
+				var img = this.$.image;
+
+				// If we are streaming, show the video
+				if ( me.streamURI && me.streaming ) {
+					vid.className = '';
+					setTimeout(function(){
+						vid.play();
+					}, 0); // give it time for the MDV to apply
+					img.className = 'hidden';
+				}
+
+				// If we are not streaming, show the snapshot
+				else {
+					vid.className = 'hidden';
+					vid.pause();
+					img.className = '';
+				}
+			},
+			streamURIChanged: function(){
+				this.refresh();
+			},
+			streamingChanged: function(){
+				this.refresh();
+			}
+		});
+	</script>
+</polymer-element>
+
+
+<!--
+# The RTC Peer
+This is a view and model representing each remote peer within the chat room.
+Each peer has a peerID which denotes where we should get the stream from.
+Essentially this is just a remote wrapper around rtc-person.
+-->
+<polymer-element name="rtc-peer" attributes="peerID streaming muted">
+	<template>
+		<rtc-person streamURI="{{streamURI}}" snapshotURI="{{snapshotURI}}" streaming="{{streaming}}" muted="{{muted}}" />
+	</template>
+	<script>
+		Polymer('rtc-peer', {
+			streamURI: null,
+			snapshotURI: null,
+			peerIDChanged: function(oldValue, newValue){
+				if ( newValue ) {
+					// fetch the stream and snapshot for the peerID
+				}
+			}
+		});
+	</script>
+</polymer-element>
+
+<!--
+# The RTC Room Panel
+This is the display for our people within the chat room.
+Talking people are arranged first. They will be displayed big (TODO).
+Then it is ourself. Then the people streaming whom aren't muted.
+Then the people streaming whom are muted.
+Then finally, everyone else (the people in snapshot mode).
+-->
+<polymer-element name="rtc-room-panel">
+	<template>
+		<content select="[talking]"></content>
+		<content select="rtc-person"></content>
+		<content select="rtc-peer[streaming]:not([muted])"></content>
+		<content select="rtc-peer[streaming][muted]"></content>
+		<content select="*"></content>
+	</template>
+	<script>
+		Polymer('rtc-room-panel', {
+
+		});
+	</script>
+</polymer-element>
+
+<!--
+# The RTC App
+This is us initialising our room and it working with all the magic.
+-->
+<polymer-element name="rtc-app" attributes="signaller">
+	<template>
+		<div>asdasd</div>
+		<rtc-media streamURI="{{myStreamURI}}" muted></rtc-media>
+		<rtc-room-panel>
+			<rtc-person id="me" name="me" streamURI="{{myStreamURI}}" streaming muted></rtc-person>
+			<!--
+			<rtc-peer peerID="..." streaming></rtc-peer>
+			<rtc-peer peerID="..."></rtc-peer>
+			<rtc-peer peerID="..."></rtc-peer>
+			<rtc-peer peerID="..."></rtc-peer>
+			-->
+		</rtc-room-panel>
+	</template>
+	<script>
+		Polymer('rtc-app', {
+			signaller: "http://rtc.io/switchboard/"
+		});
+	</script>
+</polymer-element>
