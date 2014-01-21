@@ -1,0 +1,152 @@
+<link rel="import" href="#{SITE_URL}bower_components/polymer/polymer.html" />
+
+<polymer-element name="ic-person" attributes="name stream streamURI snapshot">
+	<template>
+		Hi, I'm <strong>{{name}}</strong><br/>
+		I have a stream located at: <strong>{{streamURI}}</strong>
+	</template>
+	<script>
+		Polymer('ic-person', {
+			name: Math.random(),
+			stream: null,
+			streamURI: null,
+			snapshot: null
+		});
+	</script>
+</polymer-element>
+
+
+<polymer-element name="ic-media" attributes="stream muted capture streamURI">
+	<script src="//wzrd.in/bundle/rtc-media@latest"></script>
+	<script src="//wzrd.in/bundle/rtc-captureconfig@latest"></script>
+	<script>
+		Polymer('ic-media', {
+			muted: true,
+			capture: 'camera max:320x240',
+			ready: function(){
+				var me = this;
+				var constraints = require('rtc-captureconfig')(me.capture).toConstraints();
+				var media = require("rtc-media")({
+					muted: me.muted,
+					constraints: constraints
+				});
+				media.once('capture', function(stream){
+					me.stream = stream;
+					me.streamURI = media._createObjectURL(stream);
+				});
+			}
+		});
+	</script>
+</polymer-element>
+
+<polymer-element name="ic-video" attributes="streamURI vid">
+	<template>
+		<video id="vid" mozSrcObject="{{streamURI}}" src="{{streamURI}}" preserveaspectratio></video>
+	</template>
+	<script>
+		Polymer('ic-video', {
+			streamURIChanged: function(oldValue, newValue) {
+				var me = this;
+				if ( newValue ) {
+					setTimeout(function(){
+						me.$.vid.play();
+						me.vid = me.$.vid;
+					},0);
+				}
+			}
+		});
+	</script>
+</polymer-element>
+
+<polymer-element name="ic-videoproc" attributes="streamURI filter fps mime quality greedy imageURI">
+	<script src="//wzrd.in/bundle/rtc-videoproc@latest"></script>
+	<template></template>
+	<script>
+		var filters = {
+			bw: function(imageData) {
+				var channels = imageData.data;
+				var rgb = [];
+				var rgbAvg;
+				var alpha;
+				var ii;
+
+				// check that we have channels is divisible by four (just as a safety)
+				if (channels.length % 4 !== 0) {
+				return;
+				}
+
+				// iterate through the data
+				// NOTE: decrementing loops are fast but you need to know that you will
+				// hit 0 using this logic otherwise it will run forever (only 0 is falsy)
+				for (ii = channels.length; ii -= 4; ) {
+					// get the rgb tuple
+					rgb = [channels[ii], channels[ii + 1], channels[ii + 2]];
+
+					// get the alpha value
+					alpha = channels[ii + 3];
+
+					// calculate the rgb average
+					rgbAvg = (rgb[0] + rgb[1] + rgb[2] ) / 3;
+
+					// update the values to the rgb average
+					channels[ii] = channels[ii + 1] = channels[ii + 2] = rgbAvg;
+				}
+
+				return true;
+			}
+		};
+
+		Polymer('ic-videoproc', {
+			fps: 0.5,
+			mime: 'image/jpeg',
+			quality: 0.8,
+			greedy: true,
+			filter: null,
+			vidChanged: function(oldValue, newValue) {
+				var me = this;
+				if ( newValue ) {
+					var canvas = require('rtc-videoproc')(newValue, {
+						fps: me.fps,
+						greedy: me.greedy
+					});
+
+					document.appendChild(canvas);
+
+					if ( me.filter ) {
+						var filter = filters[me.filter];
+						canvas.pipeline.add(filter);
+					}
+
+					canvas.addEventListener('postprocess', function(event){
+						me.imageURI = canvas.toDataURL(me.mime, me.quality);
+					});
+				}
+			}
+		});
+	</script>
+</polymer-element>
+
+
+
+<polymer-element name="ic-app">
+	<template>
+		<ic-person streamURI="{{myStreamURI}}"></ic-person>
+		<ic-media streamURI="{{myStreamURI}}"></ic-media>
+		<ic-video streamURI="{{myStreamURI}}" vid="#{{myVid}}"></ic-video>
+		<ic-videoproc vid="{{myVid}}" filter="bw"></ic-videoproc>
+
+		<!--
+		<div class="peers">
+			<ic-person bandwidth="high"></ic-person>
+			<ic-person></ic-person>
+			<ic-person></ic-person>
+			<ic-person></ic-person>
+			<ic-person></ic-person>
+		</div>
+		-->
+
+	</template>
+	<script>
+		Polymer('ic-app', {});
+	</script>
+</polymer-element>
