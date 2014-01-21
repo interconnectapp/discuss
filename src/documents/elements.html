@@ -1,5 +1,9 @@
 <link rel="import" href="#{SITE_URL}bower_components/polymer/polymer.html" />
 
+<!--
+The InterConnect Person
+This is just for debugging and outputs the relevant fields when we get it
+-->
 <polymer-element name="ic-person" attributes="name stream streamURI snapshot">
 	<template>
 		Hi, I'm <strong>{{name}}</strong><br/>
@@ -16,11 +20,15 @@
 </polymer-element>
 
 
-<polymer-element name="ic-media" attributes="stream muted capture streamURI">
+<!--
+The RTC Media
+This is what captures the media and exports it as a stream and streamURI
+-->
+<polymer-element name="rtc-media" attributes="stream muted capture streamURI">
 	<script src="//wzrd.in/bundle/rtc-media@latest"></script>
 	<script src="//wzrd.in/bundle/rtc-captureconfig@latest"></script>
 	<script>
-		Polymer('ic-media', {
+		Polymer('rtc-media', {
 			muted: true,
 			capture: 'camera max:320x240',
 			ready: function(){
@@ -39,12 +47,16 @@
 	</script>
 </polymer-element>
 
-<polymer-element name="ic-video" attributes="streamURI vid">
+<!--
+The RTC Video
+This displays our streamURI as a playing video
+-->
+<polymer-element name="rtc-video" attributes="streamURI vid">
 	<template>
 		<video id="vid" mozSrcObject="{{streamURI}}" src="{{streamURI}}" preserveaspectratio></video>
 	</template>
 	<script>
-		Polymer('ic-video', {
+		Polymer('rtc-video', {
 			streamURIChanged: function(oldValue, newValue) {
 				var me = this;
 				if ( newValue ) {
@@ -58,7 +70,11 @@
 	</script>
 </polymer-element>
 
-<polymer-element name="ic-videoproc" attributes="streamURI filter fps mime quality greedy imageURI">
+<!--
+This RTC VideoProc
+This takes a streamURI and generates an imageURI with the filters applied
+-->
+<polymer-element name="rtc-videoproc" attributes="streamURI filter fps mime quality greedy imageURI">
 	<script src="//wzrd.in/bundle/rtc-videoproc@latest"></script>
 	<template></template>
 	<script>
@@ -72,7 +88,7 @@
 
 				// check that we have channels is divisible by four (just as a safety)
 				if (channels.length % 4 !== 0) {
-				return;
+					return;
 				}
 
 				// iterate through the data
@@ -96,7 +112,7 @@
 			}
 		};
 
-		Polymer('ic-videoproc', {
+		Polymer('rtc-videoproc', {
 			fps: 0.5,
 			mime: 'image/jpeg',
 			quality: 0.8,
@@ -127,13 +143,16 @@
 </polymer-element>
 
 
-
+<!--
+The Interconnect App
+This is our application that ties everything together
+-->
 <polymer-element name="ic-app">
 	<template>
 		<ic-person streamURI="{{myStreamURI}}"></ic-person>
-		<ic-media streamURI="{{myStreamURI}}"></ic-media>
-		<ic-video streamURI="{{myStreamURI}}" vid="#{{myVid}}"></ic-video>
-		<ic-videoproc vid="{{myVid}}" filter="bw"></ic-videoproc>
+		<rtc-media streamURI="{{myStreamURI}}"></rtc-media>
+		<rtc-video streamURI="{{myStreamURI}}" vid="#{{myVid}}"></rtc-video>
+		<rtc-videoproc vid="{{myVid}}" filter="bw"></rtc-videoproc>
 
 		<!--
 		<div class="peers">
@@ -149,4 +168,39 @@
 	<script>
 		Polymer('ic-app', {});
 	</script>
+</polymer-element>
+
+
+<polymer-element name="test-a" attributes="el">
+	<template>
+		<span id="el">the el</span>
+	</template>
+	<script>
+		Polymer('test-a', {
+			ready: function(){
+				me.el = me.$.el;
+			}
+		});
+	</script>
+</polymer-element>
+
+<polymer-element name="test-b" attributes="el">
+	<template></template>
+	<script>
+		Polymer('test-a', {
+			elChanged: function(oldValue, newValue){
+				me.el.setAttribute('id', 'el');
+				me.el.innerText = 'sup';
+				if ( oldValue )  me.$.removeChild(me.$.el);
+				if ( newValue )  me.$.appendChild(me.el);
+			}
+		});
+	</script>
+</polymer-element>
+
+<polymer-element name="test-c" noscript>
+	<template>
+		<test-a el="{{el}}"></test-a>
+		<test-b el="{{el}}"></test-b>
+	</template>
 </polymer-element>
