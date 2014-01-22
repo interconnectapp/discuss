@@ -70,7 +70,7 @@ This takes a streamURI and generates an imageURI with the filters applied
 			mime: 'image/jpeg',
 			quality: 0.8,
 			greedy: true,
-			filter: null,
+			filter: null,  // grayscale
 			vidChanged: function(oldValue, newValue) {
 				var me = this;
 				if ( newValue ) {
@@ -256,3 +256,4 @@ This is us initialising our room and it working with all the magic.
 		});
 	</script>
 </polymer-element>
+
