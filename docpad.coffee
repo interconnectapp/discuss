@@ -50,7 +50,7 @@ docpadConfig = {
 			scripts: [
 				'#{SITE_URL}bower_components/platform/platform.js'
 				#'#{SITE_URL}bower_components/polymer/polymer.js'
-				'#{SITE_URL}scripts/script-bundled.js'
+				#'#{SITE_URL}scripts/script-bundled.js'
 			]
 
 
@@ -82,6 +82,7 @@ docpadConfig = {
 	# =================================
 	# DocPad Plugins
 
+	###
 	plugins:
 		browserifybundles:
 			bundles: [
@@ -91,7 +92,7 @@ docpadConfig = {
 					out:       'scripts/script-bundled.js'
 				}
 			]
-
+	###
 
 	# =================================
 	# DocPad Events

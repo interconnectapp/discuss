@@ -149,12 +149,11 @@ Each person has a name, a video stream, and a low-bandwidth snapshot stream.
 When the video stream is enabled, the low-bandwidth snapshot stream should
   be disabled and vice versa.
 -->
-<polymer-element name="rtc-person" attributes="talking streaming name muted streamURI snapshotURI">
+<polymer-element name="rtc-person" attributes="talking streaming video name muted streamURI snapshotURI">
 	<template>
 		<div class="person">
 			<label id="name">{{name}}</label>
 			<rtc-video id="video" class="hidden" src="{{streamURI}}" video="{{video}}" muted="{{muted}}" playing="{{streaming}}"></rtc-video>
-			<rtc-videoproc class="hidden" src="{{video}}" imageURI="{{snapshotURI}}" filter="grayscale"></rtc-videoproc>
 			<img id="image" class="hidden" src="{{snapshotURI}}" />
 		</div>
 	</template>
@@ -165,6 +164,7 @@ When the video stream is enabled, the low-bandwidth snapshot stream should
 			height: 240px;
 		}
 		.person {
+			display: inline-block;
 			box-sizing: border-box;
 			position: relative;
 			border: 1px solid black;
@@ -220,30 +220,6 @@ When the video stream is enabled, the low-bandwidth snapshot stream should
 	</script>
 </polymer-element>
 
-
-<!--
-# The RTC Peer
-This is a view and model representing each remote peer within the chat room.
-Each peer has a peerID which denotes where we should get the stream from.
-Essentially this is just a remote wrapper around rtc-person.
--->
-<polymer-element name="rtc-peer" attributes="peerID streaming muted">
-	<template>
-		<rtc-person streamURI="{{streamURI}}" snapshotURI="{{snapshotURI}}" streaming="{{streaming}}" muted="{{muted}}" />
-	</template>
-	<script>
-		Polymer('rtc-peer', {
-			streamURI: null,
-			snapshotURI: null,
-			peerIDChanged: function(oldValue, newValue){
-				if ( newValue ) {
-					// fetch the stream and snapshot for the peerID
-				}
-			}
-		});
-	</script>
-</polymer-element>
-
 <!--
 # The RTC Room Panel
 This is the display for our people within the chat room.
@@ -252,7 +228,7 @@ Then it is ourself. Then the people streaming whom aren't muted.
 Then the people streaming whom are muted.
 Then finally, everyone else (the people in snapshot mode).
 -->
-<polymer-element name="rtc-room-panel">
+<polymer-element name="rtc-room-panel" lightdom noscript>
 	<template>
 		<content select="[talking]"></content>
 		<content select="rtc-person"></content>
@@ -260,23 +236,25 @@ Then finally, everyone else (the people in snapshot mode).
 		<content select="rtc-peer[streaming][muted]"></content>
 		<content select="*"></content>
 	</template>
-	<script>
-		Polymer('rtc-room-panel', {
-
-		});
-	</script>
 </polymer-element>
 
 <!--
 # The RTC App
 This is us initialising our room and it working with all the magic.
 -->
-<polymer-element name="rtc-app" attributes="signaller">
+<polymer-element name="rtc-app" attributes="host room">
+	<script src="//wzrd.in/bundle/rtc-quickconnect@latest"></script>
+	<style>
+		.hidden {
+			display: none;
+		}
+	</style>
 	<template>
 		<div>asdasd</div>
-		<rtc-media streamURI="{{myStreamURI}}" muted></rtc-media>
-		<rtc-room-panel>
-			<rtc-person id="me" name="me" streamURI="{{myStreamURI}}" streaming muted></rtc-person>
+		<rtc-media id="media" stream="{{myStream}}" streamURI="{{myStreamURI}}" muted></rtc-media>
+		<rtc-videoproc id="snapshot" class="hidden" src="{{video}}" imageURI="{{mySnapshotURI}}" filter="grayscale"></rtc-videoproc>
+		<rtc-room-panel id="people">
+			<rtc-person id="me" name="me" streamURI="{{myStreamURI}}" video="{{video}}" streaming muted></rtc-person>
 			<!--
 			<rtc-peer peerID="..." streaming></rtc-peer>
 			<rtc-peer peerID="..."></rtc-peer>
@@ -287,8 +265,129 @@ This is us initialising our room and it working with all the magic.
 	</template>
 	<script>
 		Polymer('rtc-app', {
-			signaller: "http://rtc.io/switchboard/"
+			room: 'interconnect',
+			host: "http://rtc.io/switchboard/",
+			myStream: null,
+			snapshotURI: null,
+			peers: null,
+			startStream: function(peerID) {
+				var me = this;
+				var peer = me.getPeer(peerID);
+				console.log('start stream', peerID);
+				if ( !peer.streaming ) {
+					debugger;
+					peer.connection.addStream(me.myStream);
+					peer.streaming = true;
+					peer.sendMessage({
+						action: 'started-stream'
+					})
+				}
+			},
+			stopStream: function(peerID) {
+				var me = this;
+				var peer = me.getPeer(peerID);
+				console.log('stop stream', peerID);
+				if ( peer.streaming ) {
+					peer.connection.removeStream(me.myStream);
+					peer.streaming = false;
+					peer.sendMessage({
+						action: 'stopped-stream'
+					})
+				}
+			},
+			getPeer: function(peerID) {
+				var me = this;
+				var peer = me.peers[peerID] || null;
+				if ( peer === null ) {
+					peer = document.createElement('rtc-person');
+					me.peers[peerID] = peer;
+					me.$.people.appendChild(peer);
+				}
+				return peer;
+			},
+			destroyPeer: function(peerID) {
+				var me = this;
+				var peer = me.peers[peerID] || null;
+				if ( peer) {
+					peer.parentNode.removeChild(peer);
+					delete me.peers[peerID];
+				}
+				return null;
+			},
+			ready: function(){
+				var me = this;
+				me.peers = {};
+				me.signaller = require('rtc-quickconnect')(me.host, {room: me.room});
+				me.signaller
+					.createDataChannel('messages')
+					.on('messages:open', function(peerChannel, peerID){
+						var peer = me.getPeer(peerID);
+						peer.channel = peerChannel;
+						peer.channel.onmessage = function(event) {
+							var data = JSON.parse(event.data || '{}') || {};
+							console.log('received message', data, 'from', peerID);
+
+							switch (data.action) {
+								// Peer has sent their stream to us
+								case 'started-stream':
+									me.startStream(peerID);
+									break;
+
+								// Peer has cancelled their stream
+								case 'stopped-stream':
+									me.stopStream(peerID);
+									break;
+
+								case 'snap':
+									peer.snapshotURI = data.snapshotURI;
+									break;
+							}
+						}
+					})
+					.on('peer:connect', function(peerConnection, peerID, data, monitor){
+						console.log('connected to', peerID);
+						var peer = me.getPeer(peerID);
+						peer.className += 'peer';
+						peer.streaming = false;
+						peer.muted = false;
+						peer.connection = peerConnection;
+						peer.name = peer.id = peerID;
+						peer.sendMessage = function(data){
+							console.log('send message', data, 'to', peerID);
+							var message = JSON.stringify(data);
+							peer.channel.send(message);
+						};
+						peer.onclick = function(){
+							if ( peer.streaming ) {
+								me.stopStream(peerID);
+							} else {
+								me.startStream(peerID);
+							}
+						};
+						peerConnection.onaddstream = function(event) {
+							debugger;
+							console.log('RECEIVED STREAM', 'from', peerID);
+							peer.stream = event.stream;
+							me.startStream(peerID);
+						};
+					})
+					.on('peer:leave', function(peerID){
+						console.log('disconnected to', peerID);
+						me.destroyPeer(peerID);
+					});
+			},
+			mySnapshotURIChanged: function(oldValue, newValue){
+				var me = this;
+				if ( newValue ) {
+					Object.keys(me.peers).forEach(function(peerID){
+						var peer = me.peers[peerID];
+						peer.sendMessage({
+							action: 'snap',
+							snapshotURI: newValue
+						});
+					});
+				}
+			}
 		});
 	</script>
 </polymer-element>
-

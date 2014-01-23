@@ -240,7 +240,6 @@ class App
 		@render()
 		@
 
-###
 $app = $('.app')
 app = new App(
 	el: $app.get(0)
@@ -260,7 +259,6 @@ app = new App(
 )
 
 app.setup()
-###
 
 
 
