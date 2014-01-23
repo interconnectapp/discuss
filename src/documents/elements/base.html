@@ -25,7 +25,7 @@ This is what captures the media and exports it as a stream and streamURI
 				});
 				media.once('capture', function(stream){
 					me.stream = stream;
-					me.streamURI = media._createObjectURL(stream);
+					me.streamURI = window.URL.createObjectURL(stream);
 				});
 			}
 		});
@@ -276,7 +276,12 @@ This is us initialising our room and it working with all the magic.
 					var stream = me.myStream;
 					console.log('start stream', peerID, stream);
 					peer.connection.addStream(stream);
+
+					//peer.removeAttribute('muted');
+					//peer.setAttribute('streaming', '');
 					peer.streaming = true;
+					peer.muted = false;
+
 					peer.sendMessage({
 						action: 'started-stream'
 					})
@@ -289,7 +294,12 @@ This is us initialising our room and it working with all the magic.
 					var stream = me.myStream;
 					console.log('stop stream', peerID, stream);
 					peer.connection.removeStream(stream);
+
+					//peer.removeAttribute('streaming');
+					//peer.setAttribute('muted', '');
 					peer.streaming = false;
+					peer.muted = true;
+
 					peer.sendMessage({
 						action: 'stopped-stream'
 					})
@@ -317,7 +327,7 @@ This is us initialising our room and it working with all the magic.
 			ready: function(){
 				var me = this;
 				me.peers = {};
-				me.signaller = require('rtc-quickconnect')(me.host, {room: me.room});
+				me.signaller = require('rtc-quickconnect')(me.host, {room: me.room, debug:false});
 				me.signaller
 					.createDataChannel('messages')
 					.on('messages:open', function(peerChannel, peerID){
@@ -326,6 +336,7 @@ This is us initialising our room and it working with all the magic.
 						peer.channel.onmessage = function(event) {
 							var data = JSON.parse(event.data || '{}') || {};
 							if ( data.action !== 'snap' )  console.log('received message', data, 'from', peerID);
+							console.log('remote stream', peerID, peer.connection.getLocalStreams(), peer.connection.getRemoteStreams());
 
 							switch (data.action) {
 								// Peer has sent their stream to us
@@ -370,11 +381,16 @@ This is us initialising our room and it working with all the magic.
 						peerConnection.onaddstream = function(event) {
 							debugger;
 							console.log('RECEIVED STREAM', 'from', peerID);
-							peer.stream = event.stream;
+							peer.streamURI = window.URL.createObjectURL(peer.stream);
+							peer.stream.onended = function(){
+								debugger;
+								me.stopStream(peerId);
+							}
 							me.startStream(peerID);
 						};
 						peerConnection.onremovestream = function(event) {
 							debugger;
+							me.stopStream(peerId);
 						};
 					})
 					.on('peer:leave', function(peerID){
