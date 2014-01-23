@@ -44,6 +44,7 @@ class App
 	createLocalSnaps: ->
 		@local.canvas = videoproc(@local.el, @config.snapOptions)
 		@local.canvas.style.display = "none"
+		debugger
 		@local.media.render(@local.canvas)
 
 		# add the processing options

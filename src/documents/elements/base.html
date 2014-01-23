@@ -36,20 +36,41 @@ This is what captures the media and exports it as a stream and streamURI
 The RTC Video
 This displays our streamURI as a playing video
 -->
-<polymer-element name="rtc-video" attributes="streamURI vid">
+<polymer-element name="rtc-video" attributes="src video playing muted">
 	<template>
-		<video id="vid" mozSrcObject="{{streamURI}}" src="{{streamURI}}" preserveaspectratio></video>
+		<video id="video" mozSrcObject="{{src}}" src="{{src}}" muted="#{{muted}}" preserveaspectratio></video>
 	</template>
 	<script>
 		Polymer('rtc-video', {
-			streamURIChanged: function(oldValue, newValue) {
+			video: null,
+			ready: function(){
+				this.refresh = this.refresh.bind(this);
+				this.refresh();
+			},
+			refresh: function(){
 				var me = this;
-				if ( newValue ) {
+				var video = this.$.video;
+
+				// Apply the element to our model for data binding
+				me.video = video;
+
+				// If we are playing, play the video
+				if ( me.src && me.playing ) {
 					setTimeout(function(){
-						me.$.vid.play();
-						me.vid = me.$.vid;
-					},0);
+						video.play();
+					}, 0);
 				}
+
+				// If we are not playing, pause the video
+				else {
+					video.pause();
+				}
+			},
+			srcChanged: function(){
+				this.refresh();
+			},
+			playingChanged: function(){
+				this.refresh();
 			}
 		});
 	</script>
@@ -57,12 +78,13 @@ This displays our streamURI as a playing video
 
 <!--
 This RTC VideoProc
-This takes a streamURI and generates an imageURI with the filters applied
+This takes a src (video element or streamURI — streamURI not support yet) and generates an imageURI with the filters applied
 -->
-<polymer-element name="rtc-videoproc" attributes="streamURI filter fps mime quality greedy imageURI">
-	<script src="//wzrd.in/bundle/rtc-videoproc@latest"></script>
+<polymer-element name="rtc-videoproc" attributes="src filter fps mime quality greedy imageURI">
+	<script src="//wzrd.in/bundle/dominject@latest"></script>
+	<script src="//wzrd.in/bundle/rtc-videoproc-bal@latest"></script>
 	<template>
-		<script src="//wzrd.in/bundle/rtc-filter-{{filter}}@latest" if="{{filter}}"></script>
+		<canvas id="canvas"></canvas>
 	</template>
 	<script>
 		Polymer('rtc-videoproc', {
@@ -71,27 +93,44 @@ This takes a streamURI and generates an imageURI with the filters applied
 			quality: 0.8,
 			greedy: true,
 			filter: null,  // grayscale
-			vidChanged: function(oldValue, newValue) {
+			filterLoaded: false,
+			src: null,
+			canvas: null,
+			filterChanged: function(oldValue, newValue) {
 				var me = this;
 				if ( newValue ) {
-					var canvas = require('rtc-videoproc')(newValue, {
+					var filterSource = '//wzrd.in/bundle/rtc-filter-'+newValue+'@latest';
+					var dominject = require('dominject');
+					dominject({
+						type: 'script',
+						url: filterSource,
+						next: function(err, element) {
+							if ( err ) {
+								console.log(err);
+							} else {
+								try {
+									var filter = require('rtc-filter-'+me.filter);
+									me.canvas.pipeline.add(filter);
+								} catch (err) {
+									console.log(err);
+								}
+							}
+						}
+					});
+				}
+			},
+			srcChanged: function(oldValue, newValue) {
+				var me = this;
+				if ( newValue ) {
+					me.canvas = require('rtc-videoproc-bal')({
+						video: newValue,
+						canvas: me.$.canvas,
 						fps: me.fps,
 						greedy: me.greedy
 					});
 
-					document.appendChild(canvas);
-
-					if ( me.filter ) {
-						try {
-							var filter = require('rtc-filter-'+me.filter);
-							canvas.pipeline.add(filter);
-						} catch (err) {
-							console.log(err);
-						}
-					}
-
-					canvas.addEventListener('postprocess', function(event){
-						me.imageURI = canvas.toDataURL(me.mime, me.quality);
+					me.canvas.addEventListener('postprocess', function(event){
+						me.imageURI = me.canvas.toDataURL(me.mime, me.quality);
 					});
 				}
 			}
@@ -114,19 +153,19 @@ When the video stream is enabled, the low-bandwidth snapshot stream should
 	<template>
 		<div class="person">
 			<label id="name">{{name}}</label>
-			<video id="video" class="hidden" src="{{streamURI}}" mozSrcObject="{{streamURI}}" muted="{{muted}}"></video>
+			<rtc-video id="video" class="hidden" src="{{streamURI}}" video="{{video}}" muted="{{muted}}" playing="{{streaming}}"></rtc-video>
+			<rtc-videoproc class="hidden" src="{{video}}" imageURI="{{snapshotURI}}" filter="grayscale"></rtc-videoproc>
 			<img id="image" class="hidden" src="{{snapshotURI}}" />
 		</div>
 	</template>
 	<style>
-		.perosn, video, img {
+		video, img {
 			display: inline-block;
 			width: 320px;
 			height: 240px;
 		}
 		.person {
 			box-sizing: border-box;
-			display: inline-block;
 			position: relative;
 			border: 1px solid black;
 			background: #EEE;
@@ -162,16 +201,12 @@ When the video stream is enabled, the low-bandwidth snapshot stream should
 				// If we are streaming, show the video
 				if ( me.streamURI && me.streaming ) {
 					vid.className = '';
-					setTimeout(function(){
-						vid.play();
-					}, 0); // give it time for the MDV to apply
 					img.className = 'hidden';
 				}
 
 				// If we are not streaming, show the snapshot
 				else {
 					vid.className = 'hidden';
-					vid.pause();
 					img.className = '';
 				}
 			},
