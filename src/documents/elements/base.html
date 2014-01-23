@@ -327,7 +327,7 @@ This is us initialising our room and it working with all the magic.
 			ready: function(){
 				var me = this;
 				me.peers = {};
-				me.signaller = require('rtc-quickconnect')(me.host, {room: me.room, debug:false});
+				me.signaller = require('rtc-quickconnect')(me.host, {reactive: true, room: me.room, debug:false});
 				me.signaller
 					.createDataChannel('messages')
 					.on('messages:open', function(peerChannel, peerID){
@@ -379,17 +379,15 @@ This is us initialising our room and it working with all the magic.
 						});
 
 						peerConnection.onaddstream = function(event) {
-							debugger;
 							console.log('RECEIVED STREAM', 'from', peerID);
+							peer.stream = event.stream;
 							peer.streamURI = window.URL.createObjectURL(peer.stream);
 							peer.stream.onended = function(){
-								debugger;
 								me.stopStream(peerId);
 							}
 							me.startStream(peerID);
 						};
 						peerConnection.onremovestream = function(event) {
-							debugger;
 							me.stopStream(peerId);
 						};
 					})
