@@ -282,7 +282,7 @@ This is us initialising our room and it working with all the magic.
 	</style>
 	<script src="//wzrd.in/bundle/rtc-quickconnect@~0.8.3"></script>
 	<template>
-		<polymer-localstorage name="my-name" value="{{myName}}" polymer-localstorage-load="{{getName}}"></polymer-localstorage>
+		<polymer-localstorage name="my-name" value="{{myName}}" on-polymer-localstorage-load="{{getName}}"></polymer-localstorage>
 		<rtc-media id="media" stream="{{myStream}}" streamURI="{{myStreamURI}}" muted></rtc-media>
 		<rtc-room-panel id="people">
 			<rtc-person id="me" name="{{myName}}" streamURI="{{myStreamURI}}" video="{{myVideo}}" streaming muted></rtc-person>
@@ -377,7 +377,6 @@ This is us initialising our room and it working with all the magic.
 			ready: function(){
 				var me = this;
 				me.peers = {};
-				setTimeout(me.getName.bind(me), 1000); // workaround for https://github.com/Polymer/polymer/issues/404
 				me.signaller = require('rtc-quickconnect')(me.host, {reactive: true, room: me.room, debug:false});
 				me.signaller
 					.createDataChannel('messages')
