@@ -341,8 +341,8 @@ This is us initialising our room and it working with all the magic.
 				if ( peer === null ) {
 					// Create peer
 					peer = document.createElement('rtc-person');
-					peer.sendMessage = function(message) {
-						console.log('Could not send message to', peerID, 'because the data channel hasn\'t been opened yet\nmessage:', message);
+					peer.sendMessage = function(data) {
+						console.log('send message', data, 'to', peerID, 'not yet possible as data channel has not opened yet');
 					};
 					me.peers[peerID] = peer;
 					me.$.people.appendChild(peer);
@@ -391,7 +391,12 @@ This is us initialising our room and it working with all the magic.
 						peer.sendMessage = function(data){
 							if ( data.action !== 'snap' )  console.log('send message', data, 'to', peerID);
 							var message = JSON.stringify(data);
-							peer.channel.send(message);
+							try {
+								peer.channel.send(message);
+							}
+							catch (err) {
+								console.log('send message', data, 'to', peerID, 'failed for reason', err);
+							}
 						};
 
 						peer.sendMessage({
