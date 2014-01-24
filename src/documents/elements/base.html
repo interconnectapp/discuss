@@ -383,7 +383,8 @@ This is us initialising our room and it working with all the magic.
 						peer.channel.onmessage = function(event) {
 							var data = JSON.parse(event.data || '{}') || {};
 							if ( data.action !== 'snap' )  console.log('received message', data, 'from', peerID);
-							console.log('remote stream', peerID, peer.connection.getLocalStreams(), peer.connection.getRemoteStreams());
+
+							// console.log('remote stream', peerID, peer.connection.getLocalStreams(), peer.connection.getRemoteStreams());
 
 							switch (data.action) {
 								// Peer has sent us their latest meta data
