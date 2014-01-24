@@ -250,33 +250,32 @@ Then finally, everyone else (the people in snapshot mode).
 # The RTC App
 This is us initialising our room and it working with all the magic.
 -->
+<link rel="import" href="#{SITE_URL}bower_components/polymer-localstorage/polymer-localstorage.html">
 <polymer-element name="rtc-app" attributes="host room">
-	<script src="//wzrd.in/bundle/rtc-quickconnect@~0.8.3"></script>
 	<style>
 		.hidden {
 			display: none;
 		}
 	</style>
+	<script src="//wzrd.in/bundle/rtc-quickconnect@~0.8.3"></script>
 	<template>
+		<polymer-localstorage name="my-name" value="{{myName}}" polymer-localstorage-load="{{getName}}"></polymer-localstorage>
 		<rtc-media id="media" stream="{{myStream}}" streamURI="{{myStreamURI}}" muted></rtc-media>
-		<rtc-videoproc id="snapshot" class="hidden" src="{{video}}" imageURI="{{mySnapshotURI}}" filter="grayscale"></rtc-videoproc>
+		<rtc-videoproc id="snapshot" class="hidden" src="{{myVideo}}" imageURI="{{mySnapshotURI}}" filter="grayscale"></rtc-videoproc>
 		<rtc-room-panel id="people">
-			<rtc-person id="me" name="You" streamURI="{{myStreamURI}}" video="{{video}}" streaming muted></rtc-person>
-			<!--
-			<rtc-peer peerID="..." streaming></rtc-peer>
-			<rtc-peer peerID="..."></rtc-peer>
-			<rtc-peer peerID="..."></rtc-peer>
-			<rtc-peer peerID="..."></rtc-peer>
-			-->
+			<rtc-person id="me" name="{{myName}}" streamURI="{{myStreamURI}}" video="{{myVideo}}" streaming muted></rtc-person>
 		</rtc-room-panel>
 	</template>
 	<script>
 		Polymer('rtc-app', {
 			room: 'interconnect',
 			host: location.href.indexOf('github.io') !== -1 ? 'http://rtc.io/switchboard/' : location.href.replace(/(^.*\/).*$/, "$1"),
-			snapshotURI: null,
 			peers: null,
 			myStream: null,
+			myName: null,
+			myStreamURI: null,
+			mySnapshotURI: null,
+			myVideo: null,
 			startStream: function(peerID) {
 				var me = this;
 				var peer = me.getPeer(peerID);
@@ -292,7 +291,7 @@ This is us initialising our room and it working with all the magic.
 
 					peer.sendMessage({
 						action: 'started-stream'
-					})
+					});
 				}
 			},
 			stopStream: function(peerID) {
@@ -310,7 +309,7 @@ This is us initialising our room and it working with all the magic.
 
 					peer.sendMessage({
 						action: 'stopped-stream'
-					})
+					});
 				}
 			},
 			getPeer: function(peerID) {
@@ -332,9 +331,16 @@ This is us initialising our room and it working with all the magic.
 				}
 				return null;
 			},
+			getName: function(){
+				var me = this;
+				while ( !me.myName ) {
+					me.myName = prompt('What is your name?');
+				}
+			},
 			ready: function(){
 				var me = this;
 				me.peers = {};
+				setTimeout(me.getName.bind(me), 1000); // workaround for https://github.com/Polymer/polymer/issues/404
 				me.signaller = require('rtc-quickconnect')(me.host, {reactive: true, room: me.room, debug:false});
 				me.signaller
 					.createDataChannel('messages')
@@ -361,7 +367,7 @@ This is us initialising our room and it working with all the magic.
 									peer.snapshotURI = data.snapshotURI;
 									break;
 							}
-						}
+						};
 					})
 					.on('peer:connect', function(peerConnection, peerID, data, monitor){
 						console.log('connected to', peerID);
@@ -392,7 +398,7 @@ This is us initialising our room and it working with all the magic.
 							peer.streamURI = window.URL.createObjectURL(peer.stream);
 							peer.stream.onended = function(){
 								me.stopStream(peerId);
-							}
+							};
 							me.startStream(peerID);
 						};
 						peerConnection.onremovestream = function(event) {
