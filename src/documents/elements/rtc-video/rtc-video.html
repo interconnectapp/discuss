@@ -1,0 +1,10 @@
+<!--
+The RTC Video
+This displays our streamURI as a playing video
+-->
+<polymer-element name="rtc-video" attributes="src video playing muted">
+	<template>
+		<video id="video" mozSrcObject="{{src}}" src="{{src}}" muted?="{{muted}}" preserveaspectratio></video>
+	</template>
+	<script src="./rtc-video.js"></script>
+</polymer-element>

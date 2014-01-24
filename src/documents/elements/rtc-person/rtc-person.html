@@ -1,0 +1,18 @@
+<!--
+# The RTC Person
+This is a view and model representing each person within the chat room.
+Each person has a name, a video stream, and a low-bandwidth snapshot stream.
+When the video stream is enabled, the low-bandwidth snapshot stream should
+  be disabled and vice versa.
+-->
+<polymer-element name="rtc-person" attributes="streaming video name muted streamURI snapshotURI">
+	<template>
+		<div id="person">
+			<label id="name" class="visible">{{name}}</label>
+			<rtc-video id="video" class="hidden" src="{{streamURI}}" video="{{video}}" muted?="{{muted}}" playing?="{{streaming}}"></rtc-video>
+			<img id="image" class="hidden" src="{{snapshotURI}}" />
+		</div>
+	</template>
+	<link href="./rtc-person.css" rel="stylesheet" />
+	<script src="./rtc-person.js"></script>
+</polymer-element>

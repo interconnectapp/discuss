@@ -1,0 +1,12 @@
+<!--
+This RTC VideoProc
+This takes a src (video element or streamURI — streamURI not support yet) and generates an imageURI with the filters applied
+-->
+<polymer-element name="rtc-videoproc" attributes="src filter fps mime quality greedy imageURI">
+	<template>
+		<canvas id="canvas"></canvas>
+	</template>
+	<script src="//wzrd.in/bundle/dominject@~1.0.3"></script>
+	<script src="//wzrd.in/bundle/rtc-videoproc-bal@~0.8.2"></script>
+	<script src="./rtc-videoproc.js"></script>
+</polymer-element>

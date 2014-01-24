@@ -1,0 +1,34 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+#person, #video, #image {
+	display: inline-block;
+	width: 320px;
+	height: 240px;
+}
+#person {
+	position: relative;
+	border: 1px solid black;
+	background: #EEE;
+	overflow: hidden;
+}
+#name {
+	position: absolute;
+	width: 100%;
+	background: black;
+	background: rgba(0,0,0,0.1);
+	color: white;
+	bottom: -1em;
+	left: 0;
+	text-align: center;
+	font-family: monospace;
+	line-height: 1em;
+	transition: 0.1s bottom ease-in;
+}
+#person:hover #name, #name.visible {
+	bottom: 0;
+}
+.hidden {
+	display: none !important;
+}
