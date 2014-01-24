@@ -163,7 +163,7 @@ When the video stream is enabled, the low-bandwidth snapshot stream should
 <polymer-element name="rtc-person" attributes="streaming video name muted streamURI snapshotURI">
 	<template>
 		<div id="person">
-			<label id="name">{{name}}</label>
+			<label id="name" class="visible">{{name}}</label>
 			<rtc-video id="video" class="hidden" src="{{streamURI}}" video="{{video}}" muted?="{{muted}}" playing?="{{streaming}}"></rtc-video>
 			<img id="image" class="hidden" src="{{snapshotURI}}" />
 		</div>
@@ -182,15 +182,23 @@ When the video stream is enabled, the low-bandwidth snapshot stream should
 			position: relative;
 			border: 1px solid black;
 			background: #EEE;
+			overflow: hidden;
 		}
 		#name {
 			position: absolute;
 			width: 100%;
 			background: black;
-			background: rgba(0,0,0,0.8);
+			background: rgba(0,0,0,0.1);
 			color: white;
-			bottom: 0;
+			bottom: -1em;
 			left: 0;
+			text-align: center;
+			font-family: monospace;
+			line-height: 1em;
+			transition: 0.1s bottom ease-in;
+		}
+		#person:hover #name, #name.visible {
+			bottom: 0;
 		}
 		.hidden {
 			display: none !important;
@@ -209,6 +217,7 @@ When the video stream is enabled, the low-bandwidth snapshot stream should
 			},
 			refresh: function(){
 				var me = this;
+				var name = me.$.name;
 				var video = me.$.video;
 				var image = me.$.image;
 
@@ -219,10 +228,19 @@ When the video stream is enabled, the low-bandwidth snapshot stream should
 				}
 
 				// If we are not streaming, show the snapshot
-				else {
+				else if ( me.snapshotURI ) {
 					video.className = 'hidden';
 					image.className = '';
 				}
+
+				else {
+					image.className = video.className = 'hidden';
+				}
+
+				// Hide the name
+				setTimeout(function(){
+					name.className = '';
+				}, 5000);
 			},
 			streamURIChanged: function(){
 				this.refresh();
