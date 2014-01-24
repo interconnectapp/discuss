@@ -8,19 +8,19 @@ standalone: true
 The RTC Media
 This is what captures the media and exports it as a stream and streamURI
 -->
-<polymer-element name="rtc-media" attributes="stream muted capture streamURI">
+<polymer-element name="rtc-media" attributes="capture stream streamURI">
 	<script src="//wzrd.in/bundle/rtc-media@~1.5.1"></script>
 	<script src="//wzrd.in/bundle/rtc-captureconfig@~0.4.0"></script>
 	<template></template>
 	<script>
 		Polymer('rtc-media', {
-			muted: true,
 			capture: 'camera max:320x240',
+			stream: null,
+			streamURI: null,
 			ready: function(){
 				var me = this;
 				var constraints = require('rtc-captureconfig')(me.capture).toConstraints();
 				var media = require("rtc-media")({
-					muted: me.muted,
 					constraints: constraints
 				});
 				media.once('capture', function(stream){
@@ -38,18 +38,21 @@ This displays our streamURI as a playing video
 -->
 <polymer-element name="rtc-video" attributes="src video playing muted">
 	<template>
-		<video id="video" mozSrcObject="{{src}}" src="{{src}}" muted="#{{muted}}" preserveaspectratio></video>
+		<video id="video" mozSrcObject="{{src}}" src="{{src}}" muted?="{{muted}}" preserveaspectratio></video>
 	</template>
 	<script>
 		Polymer('rtc-video', {
+			src: null,
 			video: null,
+			muted: false,
+			playing: true,
 			ready: function(){
-				this.refresh = this.refresh.bind(this);
 				this.refresh();
+				this.refresh = this.refresh.bind(this);
 			},
 			refresh: function(){
 				var me = this;
-				var video = this.$.video;
+				var video = me.$.video;
 
 				// Apply the element to our model for data binding
 				me.video = video;
@@ -96,6 +99,7 @@ This takes a src (video element or streamURI — streamURI not support yet) and
 			filterMethod: null,
 			src: null,
 			videoproc: null,
+			imageURI: null,
 			refresh: function(){
 				var me = this;
 				if ( me.src && me.filterMethod ) {
@@ -139,8 +143,7 @@ This takes a src (video element or streamURI — streamURI not support yet) and
 				}
 			},
 			srcChanged: function(oldValue, newValue) {
-				var me = this;
-				me.refresh.call(me);
+				this.refresh();
 			}
 		});
 	</script>
@@ -157,28 +160,30 @@ Each person has a name, a video stream, and a low-bandwidth snapshot stream.
 When the video stream is enabled, the low-bandwidth snapshot stream should
   be disabled and vice versa.
 -->
-<polymer-element name="rtc-person" attributes="talking streaming video name muted streamURI snapshotURI">
+<polymer-element name="rtc-person" attributes="streaming video name muted streamURI snapshotURI">
 	<template>
-		<div class="person">
+		<div id="person">
 			<label id="name">{{name}}</label>
-			<rtc-video id="video" class="hidden" src="{{streamURI}}" video="{{video}}" muted="{{muted}}" playing="{{streaming}}"></rtc-video>
+			<rtc-video id="video" class="hidden" src="{{streamURI}}" video="{{video}}" muted?="{{muted}}" playing?="{{streaming}}"></rtc-video>
 			<img id="image" class="hidden" src="{{snapshotURI}}" />
 		</div>
 	</template>
 	<style>
-		video, img {
+		* {
+			margin: 0;
+			padding: 0;
+		}
+		#person, #video, #image {
 			display: inline-block;
 			width: 320px;
 			height: 240px;
 		}
-		.person {
-			display: inline-block;
-			box-sizing: border-box;
+		#person {
 			position: relative;
 			border: 1px solid black;
 			background: #EEE;
 		}
-		label {
+		#name {
 			position: absolute;
 			width: 100%;
 			background: black;
@@ -188,34 +193,35 @@ When the video stream is enabled, the low-bandwidth snapshot stream should
 			left: 0;
 		}
 		.hidden {
-			display: none;
+			display: none !important;
 		}
 	</style>
 	<script>
 		Polymer('rtc-person', {
+			video: null,
 			streaming: false,
+			name: null,
 			muted: false,
 			streamURI: null,
 			snapshotURI: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
 			ready: function(){
-				this.refresh = this.refresh.bind(this);
 				this.refresh();
 			},
 			refresh: function(){
 				var me = this;
-				var vid = this.$.video;
-				var img = this.$.image;
+				var video = me.$.video;
+				var image = me.$.image;
 
 				// If we are streaming, show the video
 				if ( me.streamURI && me.streaming ) {
-					vid.className = '';
-					img.className = 'hidden';
+					video.className = '';
+					image.className = 'hidden';
 				}
 
 				// If we are not streaming, show the snapshot
 				else {
-					vid.className = 'hidden';
-					img.className = '';
+					video.className = 'hidden';
+					image.className = '';
 				}
 			},
 			streamURIChanged: function(){
@@ -238,7 +244,6 @@ Then finally, everyone else (the people in snapshot mode).
 -->
 <polymer-element name="rtc-room-panel" lightdom noscript>
 	<template>
-		<content select="[talking]"></content>
 		<content select="rtc-person"></content>
 		<content select="rtc-peer[streaming]:not([muted])"></content>
 		<content select="rtc-peer[streaming][muted]"></content>
@@ -254,17 +259,17 @@ This is us initialising our room and it working with all the magic.
 <polymer-element name="rtc-app" attributes="host room">
 	<style>
 		.hidden {
-			display: none;
+			display: none !important;
 		}
 	</style>
 	<script src="//wzrd.in/bundle/rtc-quickconnect@~0.8.3"></script>
 	<template>
 		<polymer-localstorage name="my-name" value="{{myName}}" polymer-localstorage-load="{{getName}}"></polymer-localstorage>
 		<rtc-media id="media" stream="{{myStream}}" streamURI="{{myStreamURI}}" muted></rtc-media>
-		<rtc-videoproc id="snapshot" class="hidden" src="{{myVideo}}" imageURI="{{mySnapshotURI}}" filter="grayscale"></rtc-videoproc>
 		<rtc-room-panel id="people">
 			<rtc-person id="me" name="{{myName}}" streamURI="{{myStreamURI}}" video="{{myVideo}}" streaming muted></rtc-person>
 		</rtc-room-panel>
+		<rtc-videoproc id="snapshot" class="hidden" src="{{myVideo}}" imageURI="{{mySnapshotURI}}" filter="grayscale"></rtc-videoproc>
 	</template>
 	<script>
 		Polymer('rtc-app', {
