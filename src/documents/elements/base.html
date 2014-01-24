@@ -339,7 +339,11 @@ This is us initialising our room and it working with all the magic.
 				var me = this;
 				var peer = me.peers[peerID] || null;
 				if ( peer === null ) {
+					// Create peer
 					peer = document.createElement('rtc-person');
+					peer.sendMessage = function(message) {
+						console.log('Could not send message to', peerID, 'because the data channel hasn\'t been opened yet\nmessage:', message);
+					};
 					me.peers[peerID] = peer;
 					me.$.people.appendChild(peer);
 				}
