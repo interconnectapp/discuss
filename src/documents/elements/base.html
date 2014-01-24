@@ -336,6 +336,20 @@ This is us initialising our room and it working with all the magic.
 				while ( !me.myName ) {
 					me.myName = prompt('What is your name?');
 				}
+				me.sendMessage({
+					action: 'meta',
+					meta: {
+						name: me.myName
+					}
+				});
+			},
+			sendMessage: function(data){
+				var me = this;
+				var message = JSON.stringify(data);
+				Object.keys(me.peers).forEach(function(peerID){
+					var peer = me.peers[peerID];
+					peer.sendMessage(message);
+				});
 			},
 			ready: function(){
 				var me = this;
@@ -347,12 +361,31 @@ This is us initialising our room and it working with all the magic.
 					.on('messages:open', function(peerChannel, peerID){
 						var peer = me.getPeer(peerID);
 						peer.channel = peerChannel;
+
+						peer.sendMessage = function(data){
+							if ( data.action !== 'snap' )  console.log('send message', data, 'to', peerID);
+							var message = JSON.stringify(data);
+							peer.channel.send(message);
+						};
+
+						peer.sendMessage({
+							action: 'meta',
+							meta: {
+								name: me.myName
+							}
+						});
+
 						peer.channel.onmessage = function(event) {
 							var data = JSON.parse(event.data || '{}') || {};
 							if ( data.action !== 'snap' )  console.log('received message', data, 'from', peerID);
 							console.log('remote stream', peerID, peer.connection.getLocalStreams(), peer.connection.getRemoteStreams());
 
 							switch (data.action) {
+								// Peer has sent us their latest meta data
+								case 'meta':
+									peer.name = (data.meta || {}).name;
+									break;
+
 								// Peer has sent their stream to us
 								case 'started-stream':
 									me.startStream(peerID);
@@ -363,6 +396,7 @@ This is us initialising our room and it working with all the magic.
 									me.stopStream(peerID);
 									break;
 
+								// Peer has sent us their latest snapshot
 								case 'snap':
 									peer.snapshotURI = data.snapshotURI;
 									break;
@@ -377,12 +411,6 @@ This is us initialising our room and it working with all the magic.
 						peer.muted = false;
 						peer.connection = peerConnection;
 						peer.name = peer.id = peerID;
-
-						peer.sendMessage = function(data){
-							if ( data.action !== 'snap' )  console.log('send message', data, 'to', peerID);
-							var message = JSON.stringify(data);
-							peer.channel.send(message);
-						};
 
 						peer.addEventListener('click', function(){
 							if ( peer.streaming ) {
@@ -401,6 +429,7 @@ This is us initialising our room and it working with all the magic.
 							};
 							me.startStream(peerID);
 						};
+
 						peerConnection.onremovestream = function(event) {
 							me.stopStream(peerId);
 						};
