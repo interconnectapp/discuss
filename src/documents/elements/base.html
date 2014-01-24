@@ -9,8 +9,8 @@ The RTC Media
 This is what captures the media and exports it as a stream and streamURI
 -->
 <polymer-element name="rtc-media" attributes="stream muted capture streamURI">
-	<script src="//wzrd.in/bundle/rtc-media@latest"></script>
-	<script src="//wzrd.in/bundle/rtc-captureconfig@latest"></script>
+	<script src="//wzrd.in/bundle/rtc-media@~1.5.1"></script>
+	<script src="//wzrd.in/bundle/rtc-captureconfig@~0.4.0"></script>
 	<template></template>
 	<script>
 		Polymer('rtc-media', {
@@ -81,8 +81,8 @@ This RTC VideoProc
 This takes a src (video element or streamURI — streamURI not support yet) and generates an imageURI with the filters applied
 -->
 <polymer-element name="rtc-videoproc" attributes="src filter fps mime quality greedy imageURI">
-	<script src="//wzrd.in/bundle/dominject@latest"></script>
-	<script src="//wzrd.in/bundle/rtc-videoproc-bal@latest"></script>
+	<script src="//wzrd.in/bundle/dominject@~1.0.3"></script>
+	<script src="//wzrd.in/bundle/rtc-videoproc-bal@~0.8.2"></script>
 	<template>
 		<canvas id="canvas"></canvas>
 	</template>
@@ -93,9 +93,26 @@ This takes a src (video element or streamURI — streamURI not support yet) and
 			quality: 0.8,
 			greedy: true,
 			filter: null,  // grayscale
-			filterLoaded: false,
+			filterMethod: null,
 			src: null,
-			canvas: null,
+			videoproc: null,
+			refresh: function(){
+				var me = this;
+				if ( me.src && me.filterMethod ) {
+					me.videoproc = require('rtc-videoproc-bal')({
+						video: me.src,
+						canvas: me.$.canvas,
+						fps: me.fps,
+						greedy: me.greedy,
+					});
+
+					me.videoproc.pipeline.add(me.filterMethod);
+
+					me.videoproc.addEventListener('postprocess', function(event){
+						me.imageURI = me.videoproc.toDataURL(me.mime, me.quality);
+					});
+				}
+			},
 			filterChanged: function(oldValue, newValue) {
 				var me = this;
 				if ( newValue ) {
@@ -109,11 +126,13 @@ This takes a src (video element or streamURI — streamURI not support yet) and
 								console.log(err);
 							} else {
 								try {
-									var filter = require('rtc-filter-'+me.filter);
-									me.canvas.pipeline.add(filter);
+									me.filterMethod = require('rtc-filter-'+me.filter);
 								} catch (err) {
 									console.log(err);
+									return;
 								}
+
+								me.refresh.call(me);
 							}
 						}
 					});
@@ -121,18 +140,7 @@ This takes a src (video element or streamURI — streamURI not support yet) and
 			},
 			srcChanged: function(oldValue, newValue) {
 				var me = this;
-				if ( newValue ) {
-					me.canvas = require('rtc-videoproc-bal')({
-						video: newValue,
-						canvas: me.$.canvas,
-						fps: me.fps,
-						greedy: me.greedy
-					});
-
-					me.canvas.addEventListener('postprocess', function(event){
-						me.imageURI = me.canvas.toDataURL(me.mime, me.quality);
-					});
-				}
+				me.refresh.call(me);
 			}
 		});
 	</script>
@@ -243,7 +251,7 @@ Then finally, everyone else (the people in snapshot mode).
 This is us initialising our room and it working with all the magic.
 -->
 <polymer-element name="rtc-app" attributes="host room">
-	<script src="//wzrd.in/bundle/rtc-quickconnect@latest"></script>
+	<script src="//wzrd.in/bundle/rtc-quickconnect@~0.8.3"></script>
 	<style>
 		.hidden {
 			display: none;
