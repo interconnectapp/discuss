@@ -31,19 +31,19 @@ docpadConfig = {
 
 			# The website description (for SEO)
 			description: """
-				When your website appears in search results in say Google, the text here will be shown underneath your website's title.
+				High-bandwidth virtual office for open teams. Public rooms are free. Private rooms cost. FOSS.
 				"""
 
 			# The website keywords (for SEO) separated by commas
 			keywords: """
-				place, your, website, keywoards, here, keep, them, related, to, the, content, of, your, website
+				interconnect, webrtc, irc, chat, community, communities, connect, connected, recording, recorded
 				"""
 
 			# The website's styles
 			styles: [
-				'#{SITE_URL}vendor/normalize.css'
-				'#{SITE_URL}vendor/h5bp.css'
-				'#{SITE_URL}styles/style.css'
+				# '#{SITE_URL}vendor/normalize.css'
+				# '#{SITE_URL}vendor/h5bp.css'
+				# '#{SITE_URL}styles/style.css'
 			]
 
 			# The website's scripts
