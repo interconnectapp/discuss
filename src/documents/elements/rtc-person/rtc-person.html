@@ -5,14 +5,19 @@ Each person has a name, a video stream, and a low-bandwidth snapshot stream.
 When the video stream is enabled, the low-bandwidth snapshot stream should
   be disabled and vice versa.
 -->
+
+<link rel="import" href="#{SITE_URL}elements/spinner-bars/spinner-bars.html" />
+
 <polymer-element name="rtc-person" attributes="streaming video name muted streamURI snapshotURI">
 	<template>
+		<link href="./rtc-person.css" rel="stylesheet" />
 		<div id="person">
-			<label id="name" class="visible">{{name}}</label>
+			<label id="status" class="initial">{{status}}</label>
+			<label id="name" class="initial">{{name}}</label>
+			<spinner-bars id="spinner"></spinner-bars>
 			<rtc-video id="video" class="hidden" src="{{streamURI}}" video="{{video}}" muted?="{{muted}}" playing?="{{streaming}}"></rtc-video>
 			<img id="image" class="hidden" src="{{snapshotURI}}" />
 		</div>
 	</template>
-	<link href="./rtc-person.css" rel="stylesheet" />
 	<script src="./rtc-person.js"></script>
 </polymer-element>

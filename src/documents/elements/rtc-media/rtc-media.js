@@ -8,6 +8,9 @@ Polymer('rtc-media', {
 		var media = require("rtc-media")({
 			constraints: constraints
 		});
+		media.on('error', function(err){
+			console.log('MEDIA FAILED because of', err);
+		});
 		media.once('capture', function(stream){
 			me.stream = stream;
 			me.streamURI = window.URL.createObjectURL(stream);

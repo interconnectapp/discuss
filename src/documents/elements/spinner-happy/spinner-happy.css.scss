@@ -1,0 +1,137 @@
+---
+autoprefix: true
+---
+
+@import "compass";
+
+@mixin positionC( $radius, $amount:5, $ratio:1, $offsetX:0, $offsetY:0 ) {
+  $deg: 0deg;
+  $prc: 0%;
+
+  $degInc : 360deg / $amount;
+  $prcInc : 100% / $amount;
+
+  @for $i from 0 through $amount {
+    $x : $radius * cos( $deg ) * $ratio;
+    $y : $radius * sin( $deg ) / $ratio;
+
+    #{$prc} {
+      //transform: translate( $x, $y );
+        left: $x - $offsetX;
+        top: $y - $offsetY;
+    }
+
+    $deg : $deg + $degInc;
+    $prc : $prc + $prcInc;
+  }
+}
+
+$time: .8s;
+$blobTime: $time;
+$hoolaTime: $time * .5;
+$faceTime: $time * .5;
+
+.spinner {
+  display: inline-block;
+  position: relative;
+}
+
+progress {
+  appearance: none;
+  width: 100px;
+  height: 100px;
+  border: none;
+  position: relative;
+  z-index: 1;
+
+  margin: 1em;
+
+  transform: translateZ( 0 ) rotate( 90deg );
+
+  &::progress-value {
+    position: relative;
+    appearance: none;
+
+    border-radius: 100% / 100% 90% 90% 100%;
+    background: #6ba;
+    box-shadow: 0 0 10px -2px #6ba;
+    height: 100%;
+    width: 100% !important;
+
+    animation: blob $blobTime linear infinite;
+
+    &::before,
+    &::after {
+      content: '';
+      width: 30px;
+      height: 120px;
+      border-radius: 100%;
+      border: 10px solid #f30;
+      position: absolute;
+      top: -15px;
+      left: 40%;
+
+      animation: hoola $hoolaTime ease-in-out infinite;
+    }
+
+    &::before {
+      clip: rect( 0px, 25px, 140px, 0 );
+      z-index: -1;
+    }
+
+    &::after {
+      clip: rect( 0px, 50px, 140px, 25px );
+      z-index: 1;
+    }
+  }
+
+  &::progress-bar {
+    appearance: none;
+    background: none;
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    transform: translateZ( 0 );
+    position: relative;
+    font-size: 48px;
+    animation: face $faceTime linear infinite;
+
+    &::before,
+    &::after {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 46%;
+      width: 100%;
+      z-index: 1;
+    }
+
+    &::before {
+      content: ':';
+      color: #088;
+      transform: translate( -.5em, -50% );
+    }
+
+    &::after {
+      content: ')';
+      color: #fff;
+      transform: translate( -.2em, -50% );
+    }
+  }
+}
+
+@keyframes hoola {
+  @include positionC( 5px, 11, .5, -40px, 20px );
+}
+
+@keyframes blob {
+  @include positionC( 1px, 11, .1 );
+
+  50% {
+    border-radius: 100% / 100% 90% 90% 100%;
+  }
+}
+
+@keyframes face {
+  @include positionC( 3px, 3 );
+}

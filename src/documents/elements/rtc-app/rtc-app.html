@@ -5,6 +5,7 @@ This is us initialising our room and it working with all the magic.
 <link rel="import" href="#{SITE_URL}bower_components/polymer-localstorage/polymer-localstorage.html">
 <polymer-element name="rtc-app" attributes="host room">
 	<template>
+		<link href="./rtc-app.css" rel="stylesheet" />
 		<polymer-localstorage name="my-name" value="{{myName}}" on-polymer-localstorage-load="{{getName}}"></polymer-localstorage>
 		<rtc-media id="media" stream="{{myStream}}" streamURI="{{myStreamURI}}" muted></rtc-media>
 		<rtc-room-panel id="people">
@@ -12,7 +13,6 @@ This is us initialising our room and it working with all the magic.
 		</rtc-room-panel>
 		<rtc-videoproc id="snapshot" class="hidden" src="{{myVideo}}" imageURI="{{mySnapshotURI}}" filter="grayscale"></rtc-videoproc>
 	</template>
-	<link href="./rtc-app.css" rel="stylesheet" />
 	<script src="//wzrd.in/bundle/rtc-quickconnect@~0.8.3"></script>
 	<script src="//wzrd.in/bundle/rtc-bufferedchannel@~0.2.2"></script>
 	<script src="./rtc-app.js"></script>

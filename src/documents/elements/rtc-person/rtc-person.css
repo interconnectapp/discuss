@@ -2,7 +2,7 @@
 	margin: 0;
 	padding: 0;
 }
-#person, #video, #image {
+#person, #video, #image, #spinner {
 	display: inline-block;
 	width: 320px;
 	height: 240px;
@@ -10,25 +10,40 @@
 #person {
 	position: relative;
 	border: 1px solid black;
-	background: #EEE;
+	background: black;
 	overflow: hidden;
 }
-#name {
+#spinner {
 	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+#name, #status {
+	position: absolute;
+	left: 0;
 	width: 100%;
 	background: black;
 	background: rgba(0,0,0,0.1);
 	color: white;
-	bottom: -1em;
-	left: 0;
 	text-align: center;
 	font-family: monospace;
 	line-height: 1em;
 	transition: 0.1s bottom ease-in;
 }
-#person:hover #name, #name.visible {
+#status {
+	top: -1em;
+}
+#name {
+	bottom: -1em;
+}
+#person:hover #status, #status.initial {
+	top: 0;
+}
+#person:hover #name, #name.initial {
 	bottom: 0;
 }
+
 .hidden {
 	display: none !important;
 }
