@@ -18,6 +18,7 @@ Polymer('rtc-person', {
 		var image = me.$.image;
 		var status = me.$.status;
 		var spinner = me.$.spinner;
+		var oldStatus = me.status;
 
 		// If we are streaming, show the video
 		me.status = 'waiting';
@@ -34,40 +35,48 @@ Polymer('rtc-person', {
 			me.status = 'relaxing';
 		}
 
-		// Apply the state
-		switch ( me.status ) {
-			case 'waiting':
-			case 'connecting':
-				spinner.className = '';
-				image.className = video.className = 'hidden';
-				break;
+		// Has the status changed?
+		if ( me.status !== oldStatus ) {
+			// Apply the state
+			switch ( me.status ) {
+				case 'waiting':
+				case 'connecting':
+					spinner.className = '';
+					image.className = video.className = 'hidden';
+					break;
 
-			case 'relaxing':
-				image.className = '';
-				spinner.className = video.className = 'hidden';
-				break;
+				case 'relaxing':
+					image.className = '';
+					spinner.className = video.className = 'hidden';
+					break;
 
-			case 'streaming':
-				video.className = '';
-				spinner.className = image.className = 'hidden';
-				break;
+				case 'streaming':
+					video.className = '';
+					spinner.className = image.className = 'hidden';
+					break;
+			}
+
+			// Show the status, then hide it
+			status.className = 'initial';
+			setTimeout(function(){
+				status.className = '';
+			}, 1000);
 		}
 
-		// Show the status, then hide it
-		status.className = 'initial';
-		setTimeout(function(){
-			status.className = '';
-		}, 1000);
-
 		// Hide the name
-		setTimeout(function(){
-			name.className = '';
-		}, 5000);
+		if ( name.className ) {
+			setTimeout(function(){
+				name.className = '';
+			}, 5000);
+		}
 	},
 	streamURIChanged: function(){
 		this.refresh();
 	},
 	streamingChanged: function(){
+		this.refresh();
+	},
+	snapshotURIChanged: function(){
 		this.refresh();
 	}
 });
