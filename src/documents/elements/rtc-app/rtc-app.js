@@ -147,11 +147,11 @@ Polymer('rtc-app', {
 					}
 				});
 
-				peer.channel.on('data', function(data) {
-					var data;
+				peer.channel.on('data', function(message) {
+					var data = null;
 
 					try {
-						data = JSON.parse(data || '{}') || {};
+						data = JSON.parse(message || '{}') || {};
 					}
 					catch (err) {
 						console.log('FAILED to parse the data', data);
@@ -171,6 +171,7 @@ Polymer('rtc-app', {
 						// Peer has sent their stream to us
 						case 'started-stream':
 							if ( me.sounds ) {
+								me.blipSound.pause();
 								me.callSound.pause();
 							}
 							me.startStream(peerID);
@@ -198,33 +199,39 @@ Polymer('rtc-app', {
 				peer.name = peer.id = peerID;
 
 				peer.addEventListener('click', function(){
-					if ( peer.streaming ) {
-						if ( me.sounds ) {
-							me.blipSound.start();
-							me.callSound.pause();
+					if ( peer.status !== 'busy' && peer.status !== 'waiting' ) {
+						if ( peer.status === 'streaming' ) {
+							if ( me.sounds ) {
+								me.blipSound.start();
+								me.callSound.pause();
+							}
+							me.stopStream(peerID);
+						} else {
+							if ( me.sounds ) {
+								me.blipSound.start();
+								me.callSound.start();
+							}
+							me.startStream(peerID);
 						}
-						me.stopStream(peerID);
-					} else {
-						if ( me.sounds ) {
-							me.blipSound.start();
-							me.callSound.start();
-						}
-						me.startStream(peerID);
 					}
 				});
 
 				peerConnection.onaddstream = function(event) {
 					console.log('RECEIVED STREAM', 'from', peerID);
+					if ( me.sounds ) {
+						me.blipSound.pause();
+						me.callSound.pause();
+					}
 					peer.stream = event.stream;
 					peer.streamURI = window.URL.createObjectURL(peer.stream);
 					peer.stream.onended = function(){
-						me.stopStream(peerId);
+						me.stopStream(peerID);
 					};
 					me.startStream(peerID);
 				};
 
 				peerConnection.onremovestream = function(event) {
-					me.stopStream(peerId);
+					me.stopStream(peerID);
 				};
 			})
 			.on('peer:leave', function(peerID){
