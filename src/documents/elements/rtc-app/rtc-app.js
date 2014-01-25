@@ -31,7 +31,13 @@ Polymer('rtc-app', {
 		if ( peer.streaming ) {
 			var stream = me.myStream;
 			console.log('stop stream', peerID, stream);
-			peer.connection.removeStream(stream);
+
+			try {
+				peer.connection.removeStream(stream);
+			}
+			catch (err) {
+				console.log('FAILED to remove stream', stream, 'from peer', peerID, 'because of', err);
+			}
 
 			//peer.removeAttribute('streaming');
 			//peer.setAttribute('muted', '');
