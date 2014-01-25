@@ -11,17 +11,14 @@ Polymer('rtc-videoproc', {
 	refresh: function(){
 		var me = this;
 		if ( me.src && me.filterMethod ) {
-			me.videoproc = require('rtc-videoproc-bal')({
-				video: me.src,
-				canvas: me.$.canvas,
+			me.videoproc = require('rtc-videoproc')(me.src, me.$.canvas, {
 				fps: me.fps,
 				greedy: me.greedy,
+				filter: me.filterMethod
 			});
 
-			me.videoproc.pipeline.add(me.filterMethod);
-
-			me.videoproc.addEventListener('postprocess', function(event){
-				me.imageURI = me.videoproc.toDataURL(me.mime, me.quality);
+			me.videoproc.on('frame', function() {
+				me.imageURI = me.$.canvas.toDataURL(me.mime, me.quality);
 			});
 		}
 	},
