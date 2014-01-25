@@ -191,8 +191,7 @@ Polymer('rtc-app', {
 	},
 	mySnapshotURIChanged: function(oldValue, newValue){
 		var me = this;
-
-		console.log('snapshot uri changed: ', newValue);
+		// console.log('snapshot uri changed: ', newValue);
 		if ( newValue ) {
 			Object.keys(me.peers).forEach(function(peerID){
 				var peer = me.peers[peerID];
