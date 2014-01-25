@@ -13,15 +13,28 @@
 	background: black;
 	overflow: hidden;
 }
-#spinner {
+
+#spinner, #name, #status {
 	position: absolute;
+}
+
+#spinner {
+	z-index: 10;
 	top: 0;
+	left: 0;
+}
+#status {
+	z-index: 20;
+	top: -1em;
+	left: 0;
+}
+#name {
+	z-index: 30;
+	bottom: -1em;
 	left: 0;
 }
 
 #name, #status {
-	position: absolute;
-	left: 0;
 	width: 100%;
 	background: black;
 	background: rgba(0,0,0,0.1);
@@ -31,12 +44,7 @@
 	line-height: 1em;
 	transition: 0.1s bottom ease-in;
 }
-#status {
-	top: -1em;
-}
-#name {
-	bottom: -1em;
-}
+
 #person:hover #status, #status.initial {
 	top: 0;
 }

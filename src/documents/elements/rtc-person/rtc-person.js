@@ -5,8 +5,10 @@ Polymer('rtc-person', {
 	status: null,
 	muted: false,
 	streamURI: null,
-	snapshotURI: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+	snapshotURI: null,
+	blankURI: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
 	ready: function(){
+		this.snapshotURI = this.snapshotURI || this.blankURI;
 		this.refresh();
 	},
 	refresh: function(){
@@ -14,8 +16,8 @@ Polymer('rtc-person', {
 		var name = me.$.name;
 		var video = me.$.video;
 		var image = me.$.image;
-		var spinner = me.$.spinner;
 		var status = me.$.status;
+		var spinner = me.$.spinner;
 
 		// If we are streaming, show the video
 		me.status = 'waiting';
@@ -28,7 +30,7 @@ Polymer('rtc-person', {
 		}
 
 		// If we are not streaming, show the snapshot
-		else if ( me.snapshotURI ) {
+		else if ( me.snapshotURI && me.snapshotURI !== me.blankURI ) {
 			me.status = 'relaxing';
 		}
 
