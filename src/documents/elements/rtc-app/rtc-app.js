@@ -94,10 +94,11 @@ Polymer('rtc-app', {
 			.createDataChannel('messages')
 			.on('messages:open', function(peerChannel, peerID){
 				var peer = me.getPeer(peerID);
-				peer.channel = peerChannel;
+				peer.channel = require('rtc-bufferedchannel')(peerChannel);
 
 				peer.sendMessage = function(data){
 					if ( data.action !== 'snap' )  console.log('send message', data, 'to', peerID);
+
 					var message = JSON.stringify(data);
 					try {
 						peer.channel.send(message);
@@ -114,14 +115,14 @@ Polymer('rtc-app', {
 					}
 				});
 
-				peer.channel.onmessage = function(event) {
+				peer.channel.on('data', function(data) {
 					var data;
 
 					try {
-						data = JSON.parse(event.data || '{}') || {};
+						data = JSON.parse(data || '{}') || {};
 					}
 					catch (err) {
-						console.log('FAILED to parse the data', event.data, 'from event', event);
+						console.log('FAILED to parse the data', data);
 						return;
 					}
 
@@ -150,7 +151,7 @@ Polymer('rtc-app', {
 							peer.snapshotURI = data.snapshotURI;
 							break;
 					}
-				};
+				});
 			})
 			.on('peer:connect', function(peerConnection, peerID, data, monitor){
 				console.log('connected to', peerID);
@@ -190,6 +191,8 @@ Polymer('rtc-app', {
 	},
 	mySnapshotURIChanged: function(oldValue, newValue){
 		var me = this;
+
+		console.log('snapshot uri changed: ', newValue);
 		if ( newValue ) {
 			Object.keys(me.peers).forEach(function(peerID){
 				var peer = me.peers[peerID];
