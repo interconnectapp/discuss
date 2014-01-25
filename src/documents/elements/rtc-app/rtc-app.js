@@ -7,6 +7,24 @@ Polymer('rtc-app', {
 	myStreamURI: null,
 	mySnapshotURI: null,
 	myVideo: null,
+	sounds: null,
+	blipSound: null,
+	callSound: null,
+	ready: function(){
+		var oggSupported = (new Audio()).canPlayType("audio/ogg; codecs=vorbis");
+		if ( oggSupported ) {
+			this.sounds = true;
+			Audio.prototype.start = function(){
+				this.pause();
+				this.currentTime = 0;
+				this.play();
+			};
+			this.blipSound = new Audio('#{SITE_URL}sounds/notifications/Blip.ogg');
+			this.callSound = new Audio('#{SITE_URL}sounds/ringtones/Ubuntu.ogg');
+			this.callSound.loop = true;
+		}
+		this.setupConnection();
+	},
 	startStream: function(peerID) {
 		var me = this;
 		var peer = me.getPeer(peerID);
@@ -92,7 +110,7 @@ Polymer('rtc-app', {
 			peer.sendMessage(message);
 		});
 	},
-	ready: function(){
+	setupConnection: function(){
 		var me = this;
 		me.peers = {};
 		me.signaller = require('rtc-quickconnect')(me.host, {reactive: true, room: me.room, debug:false});
@@ -144,6 +162,9 @@ Polymer('rtc-app', {
 
 						// Peer has sent their stream to us
 						case 'started-stream':
+							if ( me.sounds ) {
+								me.callSound.pause();
+							}
 							me.startStream(peerID);
 							break;
 
@@ -170,8 +191,16 @@ Polymer('rtc-app', {
 
 				peer.addEventListener('click', function(){
 					if ( peer.streaming ) {
+						if ( me.sounds ) {
+							me.blipSound.start();
+							me.callSound.pause();
+						}
 						me.stopStream(peerID);
 					} else {
+						if ( me.sounds ) {
+							me.blipSound.start();
+							me.callSound.start();
+						}
 						me.startStream(peerID);
 					}
 				});
