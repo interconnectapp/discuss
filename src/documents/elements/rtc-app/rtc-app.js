@@ -21,6 +21,8 @@ Polymer('rtc-app', {
 			};
 			this.blipSound = new Audio('#{SITE_URL}sounds/notifications/Blip.ogg');
 			this.callSound = new Audio('#{SITE_URL}sounds/ringtones/Ubuntu.ogg');
+			this.blipSound.preload = true;
+			this.callSound.preload = true;
 			this.callSound.loop = true;
 		}
 		this.setupConnection();
@@ -31,7 +33,13 @@ Polymer('rtc-app', {
 		if ( !peer.streaming ) {
 			var stream = me.myStream;
 			console.log('start stream', peerID, stream);
-			peer.connection.addStream(stream);
+
+			try {
+				peer.connection.addStream(stream);
+			}
+			catch (err) {
+				console.log('FAILED to add stream', stream, 'from peer', peerID, 'because of', err);
+			}
 
 			//peer.removeAttribute('muted');
 			//peer.setAttribute('streaming', '');
