@@ -11,7 +11,7 @@ When the video stream is enabled, the low-bandwidth snapshot stream should
 <polymer-element name="rtc-person" attributes="streaming video name muted status streamURI snapshotURI">
 	<template>
 		<link href="./rtc-person.css" rel="stylesheet" />
-		<div id="person">
+		<div id="person" class="status-{{status}}">
 			<label id="status" class="initial">{{status}}</label>
 			<label id="name" class="initial">{{name}}</label>
 			<spinner-spiral id="spinner"></spinner-spiral>

@@ -22,17 +22,19 @@ Polymer('rtc-person', {
 
 		// If we are streaming, show the video
 		me.status = 'waiting';
-		if ( me.streaming ) {
-			if ( me.streamURI ) {
-				me.status = 'streaming';
-			} else {
-				me.status = 'connecting';
+		if ( me.snapshotURI !== me.blankURI ) { // if we've at least connected once
+			if ( me.streaming ) {
+				if ( me.streamURI ) {
+					me.status = 'streaming';
+				} else {
+					me.status = 'connecting';
+				}
 			}
-		}
 
-		// If we are not streaming, show the snapshot
-		else if ( me.snapshotURI && me.snapshotURI !== me.blankURI ) {
-			me.status = 'relaxing';
+			// If we are not streaming, show the snapshot
+			else if ( me.snapshotURI ) {
+				me.status = 'relaxing';
+			}
 		}
 
 		// Has the status changed?

@@ -9,7 +9,7 @@ This is us initialising our room and it working with all the magic.
 		<polymer-localstorage name="my-name" value="{{myName}}" on-polymer-localstorage-load="{{getName}}"></polymer-localstorage>
 		<rtc-media id="media" stream="{{myStream}}" streamURI="{{myStreamURI}}" muted></rtc-media>
 		<rtc-room-panel id="people">
-			<rtc-person id="me" name="{{myName}}" streamURI="{{myStreamURI}}" video="{{myVideo}}" streaming muted></rtc-person>
+			<rtc-person id="me" name="{{myName}}" streamURI="{{myStreamURI}}" snapshotURI="{{mySnapshotURI}}" video="{{myVideo}}" streaming muted></rtc-person>
 		</rtc-room-panel>
 		<rtc-videoproc id="snapshot" class="hidden" src="{{myVideo}}" imageURI="{{mySnapshotURI}}" filter="grayscale"></rtc-videoproc>
 	</template>

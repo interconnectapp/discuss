@@ -13,6 +13,15 @@
 	background: black;
 	overflow: hidden;
 }
+#person.status-connecting,
+#person.status-streaming,
+#person.status-relaxing {
+	cursor: pointer;
+}
+#person.status-busy,
+#person.status-waiting {
+	cursor: not-allowed;
+}
 
 #spinner, #name, #status {
 	position: absolute;
