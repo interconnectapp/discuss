@@ -121,7 +121,12 @@ Polymer('rtc-app', {
 	setupConnection: function(){
 		var me = this;
 		me.peers = {};
-		me.signaller = require('rtc-quickconnect')(me.host, {reactive: true, room: me.room, debug:false});
+		me.signaller = require('rtc-quickconnect')(me.host, {
+			reactive: true,
+			room: me.room,
+			debug: false,
+			iceServers: require('freeice')()
+		});
 		me.signaller
 			.createDataChannel('messages')
 			.on('messages:open', function(peerChannel, peerID){
