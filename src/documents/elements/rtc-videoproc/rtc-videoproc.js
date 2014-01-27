@@ -1,3 +1,7 @@
+---
+browserify: true
+---
+
 Polymer('rtc-videoproc', {
 	fps: 0.2,
 	mime: 'image/jpeg',
