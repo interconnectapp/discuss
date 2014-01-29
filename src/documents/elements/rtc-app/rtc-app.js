@@ -29,7 +29,7 @@ Polymer('rtc-app', {
 			iceServers: null
 		};
 
-		if ( false ) {
+		if ( window.location.href.indexOf('ice=free') !== -1 ) {
 			signallerOpts.iceServers = require('freeice')();
 			console.log('ice servers:', signallerOpts.iceServers);
 			me.setupConnection(signallerOpts);
