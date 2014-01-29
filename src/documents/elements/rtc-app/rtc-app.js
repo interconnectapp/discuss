@@ -25,8 +25,8 @@ Polymer('rtc-app', {
 			};
 			this.blipSound = new Audio('#{SITE_URL}sounds/notifications/Blip.ogg');
 			this.callSound = new Audio('#{SITE_URL}sounds/ringtones/Ubuntu.ogg');
-			this.blipSound.preload = true;
-			this.callSound.preload = true;
+			this.blipSound.preload = 'auto';  // true is not valid
+			this.callSound.preload = 'auto';  // true is not valid
 			this.callSound.loop = true;
 		}
 		this.setupConnection();

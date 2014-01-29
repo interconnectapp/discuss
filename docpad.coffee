@@ -82,18 +82,6 @@ docpadConfig = {
 	# =================================
 	# DocPad Plugins
 
-	###
-	plugins:
-		browserifybundles:
-			bundles: [
-				{
-					arguments: ['-r', 'rtc-videoproc/filters/grayscale']
-					entry:     'scripts/script.js'
-					out:       'scripts/script-bundled.js'
-				}
-			]
-	###
-
 	# =================================
 	# DocPad Events
 
