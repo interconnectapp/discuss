@@ -29,9 +29,11 @@ Polymer('rtc-app', {
 			iceServers: null
 		};
 
-		if ( window.location.href.indexOf('ice=free') !== -1 ) {
+		var iceFree = window.location.href.indexOf('ice=turn') === -1;
+
+		if ( iceFree ) {
 			signallerOpts.iceServers = require('freeice')();
-			console.log('ice servers:', signallerOpts.iceServers);
+			console.log('Using the free ICE servers:', signallerOpts.iceServers);
 			me.setupConnection(signallerOpts);
 		}
 		else {
@@ -45,12 +47,13 @@ Polymer('rtc-app', {
 					}
 					window.turnserversDotComAPI.iceServers(function(data){
 						signallerOpts.iceServers = data;
-						console.log('ice servers:', signallerOpts.iceServers);
+						console.log('Using the TURN ICE servers:', signallerOpts.iceServers);
 						me.setupConnection(signallerOpts);
 					})
 				}
 			});
 		}
+
 		return this;
 	},
 	loadSounds: function(){
