@@ -15,9 +15,53 @@ Polymer('rtc-app', {
 	blipSound: null,
 	callSound: null,
 	ready: function(){
+		this.peers = {};
+		this.loadSounds();
+		this.loadConnection();
+		return this;
+	},
+	loadConnection: function(){
+		var me = this;
+		var signallerOpts = {
+			reactive: true,
+			room: me.room,
+			debug: false,
+			iceServers: null
+		};
+
+		if ( false ) {
+			signallerOpts.iceServers = require('freeice')();
+			console.log('ice servers:', signallerOpts.iceServers);
+			me.setupConnection(signallerOpts);
+		}
+		else {
+			require('dominject')({
+				type: 'script',
+				url: '//api.turnservers.com/api.js?key=OJdfWBPLubSrwOXduDWzFkfjBVSNQhLS',
+				next: function(err, element) {
+					if ( err ) {
+						console.log('Failed to retrieve ICE servers', err);
+						return;
+					}
+					window.turnserversDotComAPI.iceServers(function(data){
+						signallerOpts.iceServers = data;
+						console.log('ice servers:', signallerOpts.iceServers);
+						me.setupConnection(signallerOpts);
+					})
+				}
+			});
+		}
+		return this;
+	},
+	loadSounds: function(){
 		var oggSupported = (new Audio()).canPlayType("audio/ogg; codecs=vorbis");
 		if ( oggSupported ) {
 			this.sounds = true;
+			Audio.prototype.load = function(){
+				this.preload = 'auto';  // true is not valid
+				this.play();
+				this.pause();
+			};
 			Audio.prototype.start = function(){
 				this.pause();
 				this.currentTime = 0;
@@ -25,11 +69,11 @@ Polymer('rtc-app', {
 			};
 			this.blipSound = new Audio('#{SITE_URL}sounds/notifications/Blip.ogg');
 			this.callSound = new Audio('#{SITE_URL}sounds/ringtones/Ubuntu.ogg');
-			this.blipSound.preload = 'auto';  // true is not valid
-			this.callSound.preload = 'auto';  // true is not valid
+			this.blipSound.load();
+			this.callSound.load();
 			this.callSound.loop = true;
 		}
-		this.setupConnection();
+		return this;
 	},
 	startStream: function(peerID) {
 		var me = this;
@@ -122,15 +166,10 @@ Polymer('rtc-app', {
 			peer.sendMessage(message);
 		});
 	},
-	setupConnection: function(){
+	setupConnection: function(signallerOpts){
 		var me = this;
-		me.peers = {};
-		me.signaller = require('rtc-quickconnect')(me.host, {
-			reactive: true,
-			room: me.room,
-			debug: false,
-			iceServers: require('freeice')()
-		});
+		console.log('Setting up the connection with these options:', signallerOpts);
+		me.signaller = require('rtc-quickconnect')(me.host, signallerOpts);
 		me.signaller
 			.createDataChannel('messages')
 			.on('messages:open', function(peerChannel, peerID){
