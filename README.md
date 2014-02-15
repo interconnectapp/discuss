@@ -42,7 +42,9 @@ Think of it as [IRC](http://irccloud.com) for infrastructure, [Sqwiggle](http://
 
 Ultimately, Sqwiggle is merely a closed tool for closed teams and that won't change, they'll never be a completely OSS tool optimised for open teams.
 
-Plus, such a question misses the opportunity present to create the next-generation de-facto standard communicational tool, as an open-source initiative that everyone has the power and control over.
+Plus, such a question misses the opportunity present to create the next-generation de-facto standard communicational tool, as an open-source initiative that everyone has the power and control over!
+
+The requirements for faciliating open teams and the UX surrounding that will be much different than what Sqwiggle already offers and can offer with their target market.
 
 
 ### Example Workflow
