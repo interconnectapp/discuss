@@ -38,13 +38,13 @@ Think of it as [IRC](http://irccloud.com) for infrastructure, [Sqwiggle](http://
 
 ### Why doesn't Sqwiggle just implement public free rooms?
 
-[I've suggested it countless times, they simply do not care for or understand the requirements of open teams and communities.](https://twitter.com/balupton/status/397272119802736640)
+[Benjamin actually suggested it to them months before creating InterConnect, Sqwiggle simply do not care for or understand the requirements of open teams and communities.](https://twitter.com/balupton/status/397272119802736640)
 
 Ultimately, Sqwiggle is merely a closed tool for closed teams and that won't change, they'll never be a completely OSS tool optimised for open teams.
 
 Plus, such a question misses the opportunity present to create the next-generation de-facto standard communicational tool, as an open-source initiative that everyone has the power and control over!
 
-The requirements for faciliating open teams and the UX surrounding that will be much different than what Sqwiggle already offers and can offer with their target market.
+The requirements for faciliating open teams and the UX surrounding that will be much different than what Sqwiggle already offers and can offer with their target market. Different markets, different requirements.
 
 
 ### Example Workflow
