@@ -38,7 +38,7 @@ Think of it as [IRC](http://irccloud.com) for infrastructure, [Sqwiggle](http://
 
 ### Why doesn't Sqwiggle just implement public free rooms?
 
-[I've suggested it countless times, they are not interested.](https://twitter.com/balupton/status/397272119802736640)
+[I've suggested it countless times, they simply do not care for or understand the requirements of open teams and communities.](https://twitter.com/balupton/status/397272119802736640)
 
 Plus it misses the opportunity to create the next generation de-facto standard communicational tool, as an open-source initiative that everyone has power and control over.
 
