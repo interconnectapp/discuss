@@ -1,0 +1,20 @@
+
+<polymer-element name="hangout-header" attributes="from" on-click="minimizeMe">
+	<template>
+		<style polymer-scope="global">
+			@import url(http://weloveiconfonts.com/api/?family=typicons);
+			@-webkit-keyframes pulse {
+				from { opacity: 0; }
+				to { opacity: 0.25; }
+			}
+		</style>
+		<link href="./hangout-header.css" rel="stylesheet" />
+		<span class="icon typicons-message"></span>
+		<content>Hangouts</content>
+		<div class="right">
+			<span class="icon typicons-minus"></span>
+			<span id="close" class="icon typicons-times" on-click="closeMe"></span>
+		</div>
+	</template>
+	<script src="./hangout-header.js"></script>
+</polymer-element>

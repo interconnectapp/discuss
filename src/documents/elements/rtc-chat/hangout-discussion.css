@@ -1,0 +1,8 @@
+@host {
+	:scope {
+		display: block;
+		padding: 0.5rem;
+		border: 0 solid #ccc;
+		border-width: 0 1px 0 1px;
+	}
+}

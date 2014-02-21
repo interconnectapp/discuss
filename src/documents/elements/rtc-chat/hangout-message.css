@@ -1,0 +1,77 @@
+@host {
+	:scope {
+		display: -webkit-flex;
+		display: flex;
+		border-radius: 2px;
+		margin-bottom: 10px;
+	}
+	:scope.self {
+		-webkit-justify-content: flex-end;
+		justify-content: flex-end;
+		-webkit-align-items: flex-end;
+		align-items: flex-end;
+	}
+}
+.avatar {
+	position: relative; /* for triangle */
+	height: 40px;
+}
+.avatar img {
+	width: auto;
+	height: 100%;
+}
+.avatar.isother img {
+	border-top-left-radius: 2px;
+	border-bottom-left-radius: 2px;
+}
+.avatar.self img {
+	border-top-right-radius: 2px;
+	border-bottom-right-radius: 2px;
+}
+.avatar.isother::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	right: -1px;
+	width: 0;
+	height: 0;
+	border: 5px solid white;
+	border-left-color: transparent;
+	border-bottom-color: transparent;
+}
+.avatar.self {
+	-webkit-order: 2;
+	order: 2;
+}
+.avatar.self::after {
+	content: "";
+	position: absolute;
+	bottom: 0;
+	left: -1px;
+	width: 0;
+	height: 0;
+	border: 5px solid white;
+	border-right-color: transparent;
+	border-top-color: transparent;
+	box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+.messages {
+	padding: 0.5rem;
+	background: white;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+	border-radius: 2px;
+	max-width: 180px;
+}
+time {
+	font-size: 0.7rem;
+	color: #ccc;
+}
+/* @polyfill p */
+::-webkit-distributed(p) {
+	font-size: 0.8rem;
+	margin: 0 0 0.2rem 0;
+}
+.nickname::after {
+	content: '•';
+	margin: 0 3px;
+}

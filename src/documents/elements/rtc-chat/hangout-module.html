@@ -1,0 +1,42 @@
+<polymer-element name="hangout-module" attributes="from messages profile" on-close="close" on-minimize="minimize">
+	<template>
+		<link href="./hangout-module.css" rel="stylesheet" />
+
+		<hangout-header>
+			<h1>{{from}}</h1>
+		</hangout-header>
+
+		<hangout-discussion id="discussion" minimized?="{{minimized}}">
+			<template repeat="{{message in messages}}">
+				<hangout-message isother="{{message.isother}}" from="{{from}}" profile="{{message.profile}}" datetime="{{message.datetime}}" now="{{now}}">
+					<template repeat="{{msg in message.msg}}">
+						<p>{{msg}}</p>
+					</template>
+				</hangout-message>
+			</template>
+		</hangout-discussion>
+
+		<input type="text" id="msg" placeholder="Send a message..." on-keyup="keyUp" minimized?="{{minimized}}">
+
+		<!--
+		<hangout-discussion>
+			<hangout-message from="{{from}}" profile="//twitter.com/api/users/profile_image/paul_irish" datetime="2013-06-24T12:02">
+				<p>Feelin' this Web Components thing.</p>
+				<p>Heard anything about it?</p>
+			</hangout-message>
+			<hangout-message profile="//twitter.com/api/users/profile_image/ebidel" datetime="2013-06-24T12:03">
+				<p>Totes amazing</p>
+			</hangout-message>
+			<hangout-message profile="//twitter.com/api/users/profile_image/ebidel" datetime="2013-06-24T12:05">
+				<p>Have you tried Polymer yet?</p>
+			</hangout-message>
+			<hangout-message from="{{from}}" profile="//twitter.com/api/users/profile_image/paul_irish">
+				<p>Naw bro.</p>
+				<p>I'll give it a spin.</p>
+			</hangout-message>
+		</hangout-discussion>
+		-->
+
+	</template>
+	<script src="./hangout-module.js"></script>
+</polymer-element>
