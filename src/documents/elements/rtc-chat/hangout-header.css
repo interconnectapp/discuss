@@ -10,7 +10,7 @@
 	-webkit-align-items: flex-start;
 	align-items: flex-start;
 }
-:host::before {
+:host:before {
 	content: "";
 	position: absolute;
 	top: -100%;

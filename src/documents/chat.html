@@ -1,0 +1,82 @@
+###
+layout: 'default'
+###
+
+
+<link rel="import" href="#{SITE_URL}bower_components/polymer/polymer.html" />
+
+<link rel="import" href="#{SITE_URL}elements/rtc-chat/hangout-message.html" />
+<link rel="import" href="#{SITE_URL}elements/rtc-chat/hangout-header.html" />
+<link rel="import" href="#{SITE_URL}elements/rtc-chat/hangout-discussion.html" />
+<link rel="import" href="#{SITE_URL}elements/rtc-chat/hangout-module.html" />
+
+<style>
+#hangouts {
+  position: absolute;
+  bottom: 0;
+  right: 10px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: flex-end;
+  align-items: flex-end;
+}
+hangout-module {
+  margin-left: 10px;
+}
+</style>
+
+<button>New chat</button>
+
+<div id="hangouts">
+  <!-- <hangout-module from="Paul Irish" profile="118075919496626375791"></hangout-module> -->
+</div>
+
+<script>
+document.querySelector('button').addEventListener('click', function(e) {
+  var hangout = document.createElement('hangout-module');
+  hangout.from = 'Larry Page';
+  hangout.profile = '118075919496626375791';
+
+  hangout.messages = [{
+    profile: '106189723444098348646',
+    datetime: new Date().toISOString(),
+    isother: true,
+    msg: ['Hola']
+  }];
+
+  document.querySelector('#hangouts').appendChild(hangout);
+});
+
+document.addEventListener('WebComponentsReady', function(e) {
+  var hangout = document.createElement('hangout-module');
+  hangout.from = 'Paul Irish';
+  hangout.profile = '118075919496626375791';
+
+  // var input = document.querySelector('input');
+  // input.addEventListener('keyup', function(e) {
+  //   hangout.from = e.target.value;
+  // });
+
+  hangout.messages = [{
+    profile: '113127438179392830442',
+    datetime: '2013-06-24T12:02',
+    isother: true,
+    msg: ["Feelin' this Web Components thing.", 'Heard anything about it?']
+  }, {
+    profile: '118075919496626375791',
+    datetime: '2013-06-24T12:03',
+    msg: ['Totes amazing']
+  }, {
+    profile: '118075919496626375791',
+    datetime: '2013-06-24T12:05',
+    msg: ['Have you tried Polymer yet?']
+  }, {
+    profile: '113127438179392830442',
+    datetime: '2013-06-24T12:06',
+    isother: true,
+    msg: ['Naw Bro', "I'll give it a spin"]
+  }];
+
+  document.querySelector('#hangouts').appendChild(hangout);
+});
+</script>
