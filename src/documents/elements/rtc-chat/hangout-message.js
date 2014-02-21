@@ -1,4 +1,9 @@
+---
+browserify: true
+---
+
 var STAY_NOW_FOR_ = 20 * 1000 // ms
+var moment = require('moment');
 
 function prettyPrintDate_() {
 	if (moment(this.datetime).diff(this.now) >= -STAY_NOW_FOR_) {

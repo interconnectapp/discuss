@@ -1,15 +1,14 @@
-@host {
-	:scope {
-		display: -webkit-flex;
-		display: flex;
-		width: 260px;
-		font-family: arial,sans-serif;
+:host {
+	display: -webkit-flex;
+	display: flex;
+	width: 260px;
+	font-family: arial,sans-serif;
 
-		background: #e5e5e5;
-		-webkit-flex-direction: column;
-		flex-direction: column;
-	}
+	background: #e5e5e5;
+	-webkit-flex-direction: column;
+	flex-direction: column;
 }
+
 hangout-discussion {
 	overflow: auto;
 	height: 290px;

@@ -10,10 +10,9 @@ function lastMesageWasFromMe_() {
 Polymer('hangout-module', {
 	now: new Date().toISOString(),
 	minimized: false,
+	messages: [],
 	ready: function() {
 		//this.cancelUnbindAll();
-
-		this.messages = [];
 
 		// TODO: Setup timer in parent element that manages updates.
 		timerId_ = window.setInterval(function() {
@@ -34,7 +33,7 @@ Polymer('hangout-module', {
 
 			// If we were last sender, append to existing message.
 			// Otherwise, create a new message bubble.
-			if (lastMesageWasFromMe_.bind(this)()) {
+			if ( lastMesageWasFromMe_.call(this) ) {
 				var message = this.messages[this.messages.length - 1];
 				message.msg.push(sender.value);
 				message.datetime = new Date().toISOString();

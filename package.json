@@ -57,7 +57,8 @@
     "rtc-media": "~1.5.1",
     "dominject": "~1.0.3",
     "rtc-videoproc": "~0.10.1",
-    "bower": "^1.2.8"
+    "bower": "^1.2.8",
+    "moment": "^2.5.1"
   },
   "main": "node_modules/docpad/bin/docpad-server",
   "scripts": {

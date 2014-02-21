@@ -1,17 +1,16 @@
-@host {
-	:scope {
-		display: -webkit-flex;
-		display: flex;
-		border-radius: 2px;
-		margin-bottom: 10px;
-	}
-	:scope.self {
-		-webkit-justify-content: flex-end;
-		justify-content: flex-end;
-		-webkit-align-items: flex-end;
-		align-items: flex-end;
-	}
+:host {
+	display: -webkit-flex;
+	display: flex;
+	border-radius: 2px;
+	margin-bottom: 10px;
 }
+:host.self {
+	-webkit-justify-content: flex-end;
+	justify-content: flex-end;
+	-webkit-align-items: flex-end;
+	align-items: flex-end;
+}
+
 .avatar {
 	position: relative; /* for triangle */
 	height: 40px;
