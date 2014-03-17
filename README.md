@@ -1,5 +1,8 @@
 # Interconnect
 
+**Interconnect is changing... Read our [Market Thoughts](https://github.com/bevry/interconnect/issues/14) for information.** The following is our original target, which may no longer be the case:
+
+
 A high-bandwidth virtual office for open teams. Public rooms are free. Private rooms cost. FOSS.
 
 
