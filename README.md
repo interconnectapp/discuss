@@ -6,8 +6,6 @@ The following is our original target, which may no longer be the case:
 
 ---
 
-## TLDR
-
 A high-bandwidth virtual office for open teams. Public rooms are free. Private rooms cost. FOSS.
 
 Think of it as [IRC](http://irccloud.com) for infrastructure, [Sqwiggle](http://sqwiggle.com) for Interface, [Google Hangouts on Air](http://www.google.com/+/learnmore/hangouts/onair.html) for recording, and [GitHub](https://github.com/balupton) for profiles.
