@@ -4,7 +4,7 @@
 
 - ~~Identify the problem~~
 - ~~Identify some solutions~~
-- ~~Hone in the solution to one that actually makes sense~~
+- ~~Hone in on the solution to one that actually makes sense~~
 - ~~Figure out the roadmap forward~~
 - ~~Evaluate that it is actually possible to build~~
 
