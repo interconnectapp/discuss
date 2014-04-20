@@ -1,26 +1,10 @@
 # Interconnect
 
-## Accomplishments
-
-- ~~Identify the problem~~
-- ~~Identify some solutions~~
-- ~~Hone in on the solution that actually makes sense~~
-- ~~Figure out the roadmap forward~~
-- ~~Evaluate that it is actually possible to build~~
-
-## Current focus
-
-- Communicate the vision effectively
-- Communicate the progress effectively
-- Communicate the roadmap effectively
-- Communicate the values of play and experimentation
-- Find a designer to finish the mockups
-- Build the project to a MVP level
-- Build a landing page for marketing
-
 ## Get onboard
 
 - [Get inspired, read the pitch](https://docs.google.com/document/d/17VwfUoiK8Ew3Ej3chOynZMM1s88xbMzQYnAVaJmUwrY/edit?usp=sharing)
+- [The pieces of the puzzle](http://www.gliffy.com/go/publish/image/5639405/L.png)
+- [Our todo list](https://workflowy.com/shared/799bc188-1537-396f-aa00-596895f86f9c/)
 - [Play with our very early beta](http://bevry.github.io/interconnect/)
 - [Watch our YouTube videos](https://www.youtube.com/playlist?list=PLYVl5EnzwqsTF859kXLwI1E4c6KOFnEJ9)
 - [Discover our design & business resources](https://drive.google.com/folderview?id=0B6MqiLy7C3PhNE9ha1FYVjU1d2c&usp=sharing)
