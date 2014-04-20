@@ -8,7 +8,7 @@
 - [Play with our very early beta](http://bevry.github.io/interconnect/)
 - [Watch our YouTube videos](https://www.youtube.com/playlist?list=PLYVl5EnzwqsTF859kXLwI1E4c6KOFnEJ9)
 - [Discover our design & business resources](https://drive.google.com/folderview?id=0B6MqiLy7C3PhNE9ha1FYVjU1d2c&usp=sharing)
-- [Learn and discuss the why](https://github.com/bevry/interconnect/issues/14)
+- [Learn the why](https://github.com/bevry/interconnect/issues/14)
 - [Contribute to the discussion](https://github.com/bevry/interconnect/issues)
 - [Fiddle with the the code](https://github.com/bevry/interconnect/branches)
 - [Licensed permissively with ❤](https://github.com/bevry/interconnect/blob/master/LICENSE.md)
