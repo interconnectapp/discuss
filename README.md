@@ -11,6 +11,7 @@
 - [Learn the why](https://github.com/bevry/interconnect/issues/14)
 - [Contribute to the discussion](https://github.com/bevry/interconnect/issues)
 - [Fiddle with the the code](https://github.com/bevry/interconnect/branches)
+- [Support us financially via Gittip](https://www.gittip.com/Interconnect/)
 - [Licensed permissively with ❤](https://github.com/bevry/interconnect/blob/master/LICENSE.md)
 
 ## History
