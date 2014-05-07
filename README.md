@@ -5,7 +5,7 @@
 - [Get inspired, read the pitch](https://docs.google.com/document/d/17VwfUoiK8Ew3Ej3chOynZMM1s88xbMzQYnAVaJmUwrY/edit?usp=sharing)
 - [The pieces of the puzzle](http://www.gliffy.com/go/publish/image/5639405/L.png)
 - [Our todo list](https://workflowy.com/shared/71af366a-5f95-5fce-dea3-9240a0f4b0a2/)
-- [Play with our very early beta](http://bevry.github.io/interconnect/)
+- [Play with our very early beta](http://app.interconnect.io/)
 - [Watch our YouTube videos](https://www.youtube.com/playlist?list=PLYVl5EnzwqsTF859kXLwI1E4c6KOFnEJ9)
 - [Discover our design & business resources](https://drive.google.com/folderview?id=0B6MqiLy7C3PhNE9ha1FYVjU1d2c&usp=sharing)
 - [Learn the why](https://github.com/bevry/interconnect/issues/14)
