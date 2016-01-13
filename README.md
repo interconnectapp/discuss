@@ -2,7 +2,7 @@
 
 ## Get onboard
 
-- [Get inspired, read the pitch](https://docs.google.com/document/d/17VwfUoiK8Ew3Ej3chOynZMM1s88xbMzQYnAVaJmUwrY/edit?usp=sharing)
+- ➡️ [Get inspired, read the pitch](https://docs.google.com/document/d/17VwfUoiK8Ew3Ej3chOynZMM1s88xbMzQYnAVaJmUwrY/edit?usp=sharing) ⬅️
 - [The pieces of the puzzle](http://www.gliffy.com/go/publish/image/5639405/L.png)
 - [Play with our very early beta](http://app.interconnect.io/)
 - [Our todo list](https://workflowy.com/shared/71af366a-5f95-5fce-dea3-9240a0f4b0a2/)
