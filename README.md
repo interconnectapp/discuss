@@ -18,7 +18,7 @@
 
 - Interconnect is being created by @bevry with the help of contributors like yourself
 - It's being lead by @balupton who's been toying with Interconnect since 2013
-- The idea originally started as a open-source sqwiggle clone but has now evolved into its own product
+- The idea originally started as a open-source [sqwiggle](https://angel.co/sqwiggle) [sneek](https://sneek.io) clone but has now evolved into its own product
 - @crito was the first person to develop a working prototype of Interconnect, showing that it is possible.
 - It is now developed on the `rtc.io-polymer` branch, making heavy use of web components
 - @ninabreznik provided valuable feedback indicating the social applications of Interconnect (such as browsing people's profiles)
